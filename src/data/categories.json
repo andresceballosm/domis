@@ -1,0 +1,7 @@
+[
+    {"key": "Minimercados y Tiendas", "id":1, "color":"#78b3a3", "icon" : "cart"}, 
+    {"key": "Farmacias", "id":2, "color":"#e0c1b8", "icon" : "pharmacy"}, 
+    {"key": "Panaderias", "id":3, "color":"#ebedb7", "icon" : "cart"}, 
+    {"key": "Fruvers", "id":4, "color":"#78b3a3", "icon" : "fruver"}
+]
+

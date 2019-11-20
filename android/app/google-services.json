@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "225916954305",
+    "firebase_url": "https://domis-camellab.firebaseio.com",
+    "project_id": "domis-camellab",
+    "storage_bucket": "domis-camellab.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:225916954305:android:0aa8612ff1d1c41cac5640",
+        "android_client_info": {
+          "package_name": "com.camellab.domis"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "225916954305-g7f5d8hob0hoq68820gphomgj816556t.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAc7JpPq0c5tTfxOhTBlh20YyWKCKE15Cc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "225916954305-g7f5d8hob0hoq68820gphomgj816556t.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "225916954305-t1lmgb2kv77s8rra8filqil4epb2v3ed.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.camellab.domis"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
