@@ -1,11 +1,13 @@
 import { call, takeEvery, put, take } from 'redux-saga/effects';
 import CONSTANTS from '../CONSTANTS';
+import moment from "moment";
+import 'moment/locale/es'
 import { ActionStopLoading } from '../actions/ActionApp';
 import { showAlertError, showAlertSuccess } from '../../utils/Alerts';
 import { ActionDataStores, ActionDataCategories, ActionDataProductsByCategory, ActionGetProductsByCategory, ActionClearBasket, ActionSetStore, ActionUpdateProductsByCategory, ActionDeleteProductByCategory, ActionAddProductsByCategory } from '../actions/ActionStores';
 import { dataBase, storage } from '../../services/Firebase';
 import { getGeohashRange } from '../../components/GeoHashRange';
-import { ActionGetOrders } from '../actions/ActionOrder';
+import { ActionGetOrders, ActionGetOrdersStoreByDate } from '../actions/ActionOrder';
 import { ActionDeleteUser } from '../actions/ActionsAuthentication';
 
 const getStoresByType = ref => 
@@ -31,16 +33,15 @@ const updateStore = (store) =>
 function* GetStore(data){
   const { idOwner } = data;
   try {
-    console.log('idOwner',idOwner)
     const storeRef = dataBase.collection('stores').where("owner_id", "==", idOwner);
     const data = yield call(getStoresByType, storeRef);
-    console.log('data getStore', data);
     const store_id = data._docs[0]._ref._documentPath._parts[1];
     const store = data._docs[0]._data;
-    console.log('store', store);
     Object.assign( store, {
       store_id : store_id,
   }) 
+    moment.locale('es');
+    yield put(ActionGetOrdersStoreByDate(store_id,  moment().format('l')))
     yield put(ActionSetStore(store));
     yield put(ActionStopLoading());
   } catch (error) {

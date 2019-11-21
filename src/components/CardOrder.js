@@ -4,8 +4,7 @@ import { Text, View, StyleSheet, Image, Dimensions } from 'react-native'
 let screenWidth = Dimensions.get('window').width;
 
 export const CardOrder = (props) => {
-    const d = props.item._data.created_at.toDate();
-    const date = d.getDate()  + "/" + (d.getMonth()+1) + "/" + d.getFullYear();
+    const date = props.item._data.created_at;
     return (
         <View style={[styles.card, {backgroundColor: props.color}]}>
             <View style={styles.viewHeader}>
@@ -15,7 +14,10 @@ export const CardOrder = (props) => {
             <Text style={styles.storeName}>{props.item._data.store_name}</Text>
             <View style={styles.viewBody}>
                 <Text style={styles.text}>{props.item._data.address}</Text>
-                <Text style={styles.text}>{date}</Text>
+                <View style={styles.footerDate}>
+                    <Text style={styles.text}>{date}</Text>
+                    <Text style={styles.text}>{ props.item._data.time }</Text>
+                </View>
             </View>
         </View>
     )
@@ -65,7 +67,7 @@ const styles = StyleSheet.create({
     },
     card : {
         height:scaleToDimension(110), 
-        width:scaleToDimension(210), 
+        width:scaleToDimension(230), 
         marginTop:10, 
         marginBottom:10,
         marginLeft:7, 
@@ -119,6 +121,11 @@ const styles = StyleSheet.create({
     footer:{
         marginBottom:10,
         flexDirection:'row'
+    },
+    footerDate:{
+        marginBottom:10,
+        flexDirection:'row',
+        justifyContent:'center'
     },
     buttonText:{
         fontFamily:'Ubuntu-Bold', 

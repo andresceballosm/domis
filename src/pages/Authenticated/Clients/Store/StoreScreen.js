@@ -54,8 +54,12 @@ class StoreScreen extends Component {
     getProductsByCategory = (id) => {
         const store_id = this.props.navigation.getParam('id', '');
         const data = this.props.dataProducts.products;
-        const categoryExist = data.filter(category => category._data.category_id === id);
-        categoryExist.length === 0 ? this.props.getProducts(id, store_id) : null;
+        if(data !== null){
+            const categoryExist = data.filter(category => category._data.category_id === id);
+            categoryExist.length === 0 ? this.props.getProducts(id, store_id) : null;
+        } else {
+            this.props.getProducts(id, store_id);
+        }
     }
 
     addBasket = (product) => {
@@ -147,7 +151,12 @@ class StoreScreen extends Component {
 
     renderProducts() {
         const data = this.props.dataProducts.products;
-        const products = data.filter(product => product._data.category_id === this.state.selectedTapBarCategory);
+        console.log('data', data)
+        var products = [];
+        if(data !== null){
+            products = data.filter(product => product._data.category_id === this.state.selectedTapBarCategory);
+        } 
+        
         if(products.length > 0) {
             return <FlatList
             showsHorizontalScrollIndicator={false}

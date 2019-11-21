@@ -14,11 +14,11 @@ export const CardProduct = (props) => {
             </View>
             <Text style={styles.title}> {props.item._data.name} </Text>
             <Text style={styles.subtitle}> {props.item._data.brand} / {props.item._data.quantity}  {props.item._data.unity} </Text>
+            <View style={{alignItems:'center', justifyContent:'center'}}>
+                <Text style={styles.title}>{validateMoney(props.item._data.money)} {props.item._data.price} </Text>
+            </View>
             <View style={styles.footer}>
-                <View style={{alignItems:'center', justifyContent:'center'}}>
-                    <Text style={styles.title}>{validateMoney(props.item._data.money)} {props.item._data.price} </Text>
-                </View>
-                <View style={{backgroundColor:'#78b3a3', borderRadius:10, alignItems:'center',justifyContent:'center', marginTop:5, width:80}}>
+                <View style={{backgroundColor:'#78b3a3', borderRadius:10, alignItems:'center',justifyContent:'center', marginTop:5, width:90, height:30}}>
                     <TouchableOpacity onPress={(event) => { props.click(props.item)}}>
                         <Text style={styles.buttonText}>Agregar</Text>
                     </TouchableOpacity>

@@ -57,13 +57,16 @@ class DetailsScreen extends Component {
     }
 
     componentDidUpdate(){
-        if(this.state.latitude === null && this.props.stores.stores !== null){
-            console.log('this.props.stores',this.props.stores);
-            this.setState({
-                latitude: this.props.stores.stores[0]._data.latitude,
-                longitude: this.props.stores.stores[0]._data.longitude,
-                storeName: this.props.stores.stores[0]._data.name
-            })
+        try {
+            if(this.state.latitude === null && this.props.stores.stores !== null){
+                this.setState({
+                    latitude: this.props.stores.stores[0]._data.latitude,
+                    longitude: this.props.stores.stores[0]._data.longitude,
+                    storeName: this.props.stores.stores[0]._data.name
+                })
+            }   
+        } catch (error) {
+            console.log(error)
         }
     }
 
@@ -80,7 +83,11 @@ class DetailsScreen extends Component {
         const { navigation, stores} = this.props;
         const item = navigation.getParam('item', '');
         const color = navigation.getParam('color', '');
-        const numberStores = 0//this.props.stores !== null ? this.props.stores.stores.length : 0;
+        try {
+            var numberStores = this.props.stores !== null ? this.props.stores.stores.length : 0;   
+        } catch (error) {
+            numberStores = 0;
+        }
         return (
             <View style={styles.DetailMainContainer}>
                 <Transition shared={item}>

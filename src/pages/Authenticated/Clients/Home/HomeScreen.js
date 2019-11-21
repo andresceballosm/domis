@@ -92,13 +92,12 @@ class HomeScreen extends Component {
     componentWillMount(){
         try {
             var permission = requestPositionPermission() //Geolocation.requestAuthorization();
-            console.log('permission', permission);
             Geolocation.getCurrentPosition(
                 (position) => {
-                    //const lat = position.coords.latitude;
+                    // const lat = position.coords.latitude;
+                    // const lng = position.coords.longitude
                     const lat = 4.738025;
                     const lng = -74.040747;
-                   //const lng = position.coords.longitude
                     const range = getGeohashRange(lat, lng, 2);
                     const hash = geohash.encode(lat, lng);
                     this.setState({range:range, geohash: hash})
@@ -127,20 +126,24 @@ class HomeScreen extends Component {
             <SafeAreaView style={styles.mainContainer}>
                 <ScrollView style={styles.mainContainer}>
                     <View style={styles.topContainer}>
-                        <View style={{flex:1, flexDirection: 'row', alignItems:'center', justifyContent:'center'}}>
-                            <Image style={styles.userImageContainer}
-                            source={require('../../../../../assets/icons/logo-100.png')}/>
-                            <Text style={{fontSize:30, fontFamily:'HermanoAlto Round', paddingTop:12}}>DOMIS</Text>
-                        </View>
-                        <Text style={{marginLeft: 15, marginTop: 8, fontSize:16, color: '#58647a'}}>
+                    <View style={{ flexDirection: 'row', alignItems:'center', justifyContent:'center'}}>
+                    <View style={{flex:1, marginLeft:15}}>
+                        <Text style={{ marginTop: 8, color: '#58647a'}}>
                             Hola!{"\n"}{dataUser ? dataUser.firstname : 'usuario' }
                         </Text>
+                    </View>
+                    <View style={{ flex:3, flexDirection:'row', alignItems:'center'}}>
+                        <Image style={styles.userImageContainer}
+                        source={require('../../../../../assets/icons/logo-100.png')}/>
+                        <Text style={{fontSize:30, fontFamily:'HermanoAlto Round', paddingTop:12}}>DOMIS</Text>
+                    </View>
+                    </View>
                         <Text style={{
                             marginLeft: 15,
                             marginRight: 15,
                             marginTop: 30,
                             color: '#58647a',
-                            fontSize: 40,
+                            fontSize: 35,
                             fontWeight: 'bold'
                         }}>
                             Que quieres pedir hoy?

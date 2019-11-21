@@ -20,9 +20,9 @@ export const ActionSetStore = (store) => ({
     store
 });
 
-export const ActionGetCategoriesByStore = ( idStore, token) => ({
+export const ActionGetCategoriesByStore = ( idStore) => ({
     type: CONSTANTS.GET_CATEGORIES_BY_STORE,
-    idStore, token
+    idStore
 });
 
 export const ActionDataCategories = (categories) => ({

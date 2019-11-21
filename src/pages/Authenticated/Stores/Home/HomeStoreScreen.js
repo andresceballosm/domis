@@ -10,11 +10,15 @@ import {
     Dimensions,
     ScrollView,
     Modal,
+    RefreshControl,
     StyleSheet } from 'react-native'
 import { ActionGetStore, ActionDisableStore } from '../../../../store/actions/ActionStores.js';
 import { ButtonGeneral } from '../../../../components/ButtonRegister.js';
-import { ActionLogout, ActionDeleteUser } from '../../../../store/actions/ActionsAuthentication.js';
+import { ActionLogout } from '../../../../store/actions/ActionsAuthentication.js';
 import { ActionSetLoading } from '../../../../store/actions/ActionApp.js';
+import { ChartList } from '../../../../components/Charts.js';
+import moment from "moment";
+import { ActionGetOrdersStoreByDate } from '../../../../store/actions/ActionOrder.js';
 
 let screenWidth = Dimensions.get('window').width;
 let screenHeight = Dimensions.get('window').height;
@@ -37,17 +41,14 @@ class HomeStoreScreen extends Component {
         super(props);
         this.state = {
             selectedTapBarIndex: 0,
-            visibleSettings: false
+            visibleSettings: false,
+            dataChart: null,
+            refreshing: false,
         };
     }
     
     componentDidMount(){
-        this.props.getStore(this.props.user.uid)
-    }
-
-
-    getStores = (item) => {
-        this.props.navigation.navigate('homeDetails', {item: item['key'], color: item['color'], id: item['id']})
+        this.props.getStore(this.props.user.uid);
     }
 
     deleteUser = () => {
@@ -74,6 +75,55 @@ class HomeStoreScreen extends Component {
         );       
     }
 
+    updateDataChart = () => {
+        if ( this.props.orders.length > 0 ){
+            var orders = this.props.orders;
+            var pending = [];
+            var processing = [];
+            var delivered = [];
+            var cancelled = [];
+            for (let i = 0; i < orders.length; i++) {
+                const status = orders[i]._data.status;
+                switch (status) {
+                    case 'pending':
+                        pending.push(orders[i]._data);
+                        break;
+                    case 'processing':
+                        processing.push(orders[i]._data);
+                        break;
+                    case 'delivered':
+                        delivered.push(orders[i]._data);
+                        break;
+                    case 'cancelled':
+                        cancelled.push(orders[i]._data);
+                        break;
+                    default:
+                        break;
+                }
+            };
+            var dataset = [ pending.length, processing.length, delivered.length, cancelled.length ];
+            var dataChart = {
+                labels: ["Pendiente","Procesando", "Entregado", "Cancelado"],
+                datasets: [
+                  {
+                    data: dataset
+                  }
+                ]
+            };
+            this.setState({ dataChart : dataChart })
+        }
+    };
+
+    getOrdersByDate = () => {
+        this.props.getOrdersByDate(this.props.store.store.store_id, moment().format('l'));
+        setTimeout(() => { this.updateDataChart() }, 900)
+    }
+
+    _onRefresh = () => {
+        this.getOrdersByDate();
+        this.setState({refreshing: false});
+    }
+    
     render() {
         const {dataUser, store } = this.props;
         try {
@@ -82,9 +132,21 @@ class HomeStoreScreen extends Component {
             var storeName = '';  
         }
 
+        if(this.state.dataChart === null ){
+            this.updateDataChart()
+        }
+
         return (
             <SafeAreaView style={styles.mainContainer}>
-                <ScrollView style={styles.mainContainer}>
+                <ScrollView 
+                style={styles.mainContainer}
+                refreshControl={
+                    <RefreshControl
+                      refreshing={this.state.refreshing}
+                      onRefresh={this._onRefresh}
+                    />
+                }
+                >
                     <View style={styles.topContainer}>
                         <View style={styles.headerBanner}>
                             <View style={styles.headerItem}>
@@ -144,7 +206,7 @@ class HomeStoreScreen extends Component {
                             marginLeft: 15,
                             marginRight: 15,
                             marginTop: 30,
-                            color: '#58647a',
+                            color: '#78b3a3',
                             fontSize: 25,
                             fontWeight: 'bold'
                         }}>
@@ -152,7 +214,12 @@ class HomeStoreScreen extends Component {
                         </Text> : <View></View>
                         }
                     </View>
-                   
+                    <View style={styles.viewChart}>
+                        { this.state.dataChart !== null ? 
+                        <ChartList data={ this.state.dataChart } title="Pedidos hoy"/> 
+                        : <View></View>
+                        }
+                    </View>
                 </ScrollView>
             </SafeAreaView>
         );
@@ -190,6 +257,12 @@ const styles = StyleSheet.create({
         marginTop: 5,
         height: 50,
         width: 50,
+    },
+    viewChart:{
+        flex:1,
+        paddingHorizontal:15,
+        alignItems:'center',
+        marginTop:12
     },
     bottomContainer: {
         alignItems: 'center',
@@ -245,18 +318,24 @@ const styles = StyleSheet.create({
 });
 
 const mapStateToProps = state => {
+    console.log('state',state)
     return{
         user : state.ReducerSesion && state.ReducerSesion.user ? state.ReducerSesion.user : false,
         dataUser: state.ReducerUser && state.ReducerUser.user ? state.ReducerUser.user : false,
         loading: state.ReducerLoading.loading,
         position: state.ReducerPosition,
-        store : state.ReducerStore
+        store : state.ReducerStore,
+        orders : state.ReducerOrdersByDate.orders
     }
 };
 
 const mapDispatchToProps = dispatch => ({
     getStore:(idOwner) => {
+        console.log('idOwner')
         dispatch(ActionGetStore(idOwner))
+    },
+    getOrdersByDate:(store_id, date) => {
+        dispatch(ActionGetOrdersStoreByDate(store_id, date))
     },
     closeSesion: () => {
         dispatch(ActionLogout());

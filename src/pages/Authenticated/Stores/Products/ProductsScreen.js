@@ -254,6 +254,7 @@ class ProductsScreen extends Component {
             this.setState({filter: true})
         }
     }
+    
 
     render() {
         const { store, dataProducts } = this.props;

@@ -22,6 +22,8 @@ import { ActionSetLoading } from '../../../../store/actions/ActionApp';
 import { ActionGetUser } from '../../../../store/actions/ActionOrder';
 import { FieldSelect } from '../../../../components/Fields';
 import { ButtonBackDown } from '../../../../components/ButtonRegister';
+import moment from "moment";
+import 'moment/locale/es'
 
 let screenWidth = Dimensions.get('window').width;
 
@@ -57,7 +59,9 @@ class BasketScreen extends Component {
                 }
             }
             const user_id = this.props.user.uid;
-            const created_at = new Date();
+            moment.locale('es');
+            const created_at = moment().format('l');
+            const time = moment().format('LT');
             const total = this.props.basket.total;
             const status = 'pending';
             const products = this.props.basket.addedItems;
@@ -69,7 +73,7 @@ class BasketScreen extends Component {
             } catch (error) {
                console.log(error);     
             } 
-            this.props.addOrder({store_id,store_name,total,status,products,address,phone,note,user_id, created_at}, this.props.navigation)
+            this.props.addOrder({store_id,store_name,total,status,products,address,phone,note,user_id, created_at, time}, this.props.navigation)
         } else {
             showAlertError('No hay productos en la cesta aún!')
         }
@@ -146,6 +150,7 @@ class BasketScreen extends Component {
 
     renderProductsCard(item, index) {
         return <CardBasket 
+                enabled = { true }
                 clickAdd= {(product) => { this.addQuantity(product)}} 
                 clickReduce= {(product) => { this.reduceQuantity(product)}} 
                 deleteProduct= {(product) => { this.deleteProduct(product)}}

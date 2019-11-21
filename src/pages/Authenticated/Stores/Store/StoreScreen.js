@@ -43,7 +43,7 @@ class StoreScreen extends Component {
     }
     async componentWillMount(){
         const id = this.props.navigation.getParam('id', '');
-        await this.props.getCategories(id, this.props.user.jwt_token)
+        await this.props.getCategories(id)
     }
 
     getProductsByCategory = (id,token) => {
@@ -364,9 +364,9 @@ const mapStateToProps = state => ({
 });
   
   const mapDispatchToProps = dispatch => ({
-    getCategories: (idStore, token ) => {
+    getCategories: (idStore ) => {
       dispatch(ActionSetLoading());
-      dispatch(ActionGetCategoriesByStore(idStore,token))
+      dispatch(ActionGetCategoriesByStore(idStore))
     },
     getProducts: (idCategory, token ) => {
         dispatch(ActionSetLoading());

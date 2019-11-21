@@ -3,7 +3,7 @@ import CONSTANTS from '../CONSTANTS';
 import { ActionStopLoading } from '../actions/ActionApp';
 import { ActionLogin } from '../actions/ActionsAuthentication';
 import { POST, GET, GETSIMPLE, PUT } from '../../services/Calls';
-import { ActionSetOrders, ActionSetOrderDetails, ActionSetAddress, ActionGetOrders, ActionSetUser, ActionGetUser, ActionGetOrdersStore } from '../actions/ActionOrder';
+import { ActionSetOrders, ActionSetOrderDetails, ActionSetAddress, ActionGetOrders, ActionSetUser, ActionGetUser, ActionGetOrdersStore, ActionSetOrdersByDate } from '../actions/ActionOrder';
 import { ActionDataProductsOrderDetails } from '../actions/ActionStores';
 import { showAlertError, showAlertSuccess } from '../../utils/Alerts';
 import { dataBase } from '../../services/Firebase';
@@ -38,7 +38,6 @@ const getUser = ref =>
     try {
       const ref = dataBase.collection('orders').where("user_id", "==", data.user_id);
       const orders = yield call(getOrders, ref);
-      console.log('orders',orders)
       yield put(ActionSetOrders(orders._docs))
       yield put(ActionStopLoading());
     } catch (error) {
@@ -62,6 +61,18 @@ const getUser = ref =>
     }
   }
 
+  function* GetOrdersStoreByDate(data){
+    try {
+      const ref = dataBase.collection('orders').where("store_id", "==", data.store_id)
+                                                .where("created_at", "==", data.date)
+      const orders = yield call(getOrders, ref);
+      yield put(ActionSetOrdersByDate(orders._docs))
+      yield put(ActionStopLoading());
+    } catch (error) {
+      console.log('error in order' ,error)
+      yield put(ActionStopLoading());
+    }
+  }
 
   function* GetOrdersStore(data) {
     try {
@@ -76,10 +87,8 @@ const getUser = ref =>
   }
 
   function* UpdateOrder(values) {
-    console.log('dataque', values)
     try {
       const { type, uid } = values.data;
-      console.log('type')
       yield call(updateOrder, values.data);
       if(type === 'store'){
         yield put(ActionGetOrdersStore(uid))
@@ -163,5 +172,6 @@ const getUser = ref =>
     takeEvery(CONSTANTS.GET_ADDRESS, GetAddress),
     takeEvery(CONSTANTS.PUT_ORDER, UpdateOrder),
     takeEvery(CONSTANTS.GET_ORDERS_STORE , GetOrdersStore),
+    takeEvery(CONSTANTS.GET_ORDERS_STORE_DATE , GetOrdersStoreByDate),
     takeEvery(CONSTANTS.GET_USER, GetUser )
   ]

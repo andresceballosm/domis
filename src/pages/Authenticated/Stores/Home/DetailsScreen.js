@@ -44,11 +44,11 @@ class DetailsScreen extends Component {
             storeName: null
         };
     }
-    async componentWillMount(){
-        const storetype = this.props.navigation.getParam('id', '');
-        const city = 'Bogota'
-        await this.props.getStores(storetype, this.props.user.jwt_token, this.props.position.position, city)
-    }
+    // async componentWillMount(){
+    //     const storetype = this.props.navigation.getParam('id', '');
+    //     const city = 'Bogota'
+    //     await this.props.getStores(storetype, this.props.position.position, city)
+    // }
 
     componentDidUpdate(){
         if(this.state.latitude === null && this.props.stores !== null){
@@ -330,10 +330,6 @@ const mapStateToProps = state => {
 };
   
   const mapDispatchToProps = dispatch => ({
-    getStores: (storetype,token, position, city) => {
-      dispatch(ActionSetLoading());
-      dispatch(ActionGetStoresByType(storetype,token, position, city))
-    },
     setPosition:(position) => {
         dispatch(ActionSetPosition(position))
     }

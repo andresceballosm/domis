@@ -10,8 +10,18 @@ export const ActionGetOrdersStore = (store_id) => ({
     store_id
 })
 
+export const ActionGetOrdersStoreByDate = (store_id, date) => ({
+    type: CONSTANTS.GET_ORDERS_STORE_DATE,
+    store_id, date
+})
+
 export const ActionSetOrders = (orders) => ({
     type: CONSTANTS.SET_ORDERS,
+    orders
+})
+
+export const ActionSetOrdersByDate = (orders) => ({
+    type: CONSTANTS.SET_ORDERS_DATE,
     orders
 })
 

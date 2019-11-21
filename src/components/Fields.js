@@ -91,30 +91,35 @@ export const fieldSelectPicker = (props) => {
   ) 
 }
 
-export const fieldSelectForm = (props) => {
+export const SelectPicker = (props) => {
   return (
-    <View style={styles.texInput}>
-      <View style={styles.startRow}>
-          <Text style={styles.inputNameText}>{props.label}</Text>  
-      </View>
-      <View style={styles.endRow}>
-        <View style={styles.field}>
-          <ModalSelector
-          data={props.data}
-          disabled={props.editable}
-          initValueTextStyle={{color:'black'}}
-          labelExtractor= { item => item }
-          initValue={ props.initialValue ? props.initialValue : 'seleccione'}
-          cancelButtonAccessibilityLabel={'Cancelar'}
-          style={{ fontSize:16, height:45, color:'black', borderWidth:0}}
-          onChange={ props.input.onChange } 
-          selectStyle={{ borderWidth:0}}
-          />
-        </View>
-      </View>
+    <View style={styles.selectInput}>
+      <Item picker>
+        <Picker
+          mode="dropdown"
+          iosIcon={<Icon name="arrow-down" />}
+          style={{ width: scaleToDimension(300)}}
+          iosHeader="Seleccione"
+          placeholderStyle={ props.initialValue ? { color: "black" } : { color: "gray" } }
+          placeholder={ props.initialValue ? props.initialValue : 'Seleccione'}
+          headerBackButtonText="Salir"
+          placeholderIconColor="#007aff"
+
+          selectedValue={props.initialValue ? props.initialValue  : '' }
+          onChange={ ( value ) => props.change(value) } 
+        >
+          { props.data.map((value, idx) => { 
+              return (
+                  <Picker.Item label={value} key={idx} label={value} value={value} />
+              )
+          })}
+        </Picker>
+      </Item>
     </View>
-  );
-};
+  ) 
+}
+
+
 
 export const fieldSelectCategoriesPicker = (props) => {
   return (
@@ -211,8 +216,7 @@ export const fieldInputNumber = (props) => {
 
 export const FieldSelect = (props) => {
   return(
-    <View style={{flex:1, borderRadius:10, borderWidth:0.2}}>
-        <Text style={{fontSize:16, fontFamily:'Ubuntu-Bold'}}>{props.label}:</Text>
+    <View style={{flex:1}}>
         <ModalSelector
         data={ props.data }
         disabled={props.editable}

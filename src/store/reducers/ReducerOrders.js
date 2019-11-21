@@ -32,6 +32,17 @@ export const ReducerOrders = ( state = initState , action) => {
     }
 }
 
+export const ReducerOrdersByDate = ( state = initState , action) => {
+    switch (action.type) {
+        case CONSTANTS.SET_ORDERS_DATE:
+            return { ...state, orders: action.orders };
+        case CONSTANTS.LOGOUT:
+            return initState; 
+        default:
+            return state;
+    }
+}
+
 export const ReducerOrderDetails = ( state = initStateDetails , action) => {
     switch (action.type) {
         case CONSTANTS.SET_ORDER_DETAILS:

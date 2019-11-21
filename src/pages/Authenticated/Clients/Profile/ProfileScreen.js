@@ -18,7 +18,7 @@ import DeliveryForm from '../Orders/DeliveryForm'
 import { ActionSetLoading } from '../../../../store/actions/ActionApp.js';
 import { ButtonGeneral } from '../../../../components/ButtonRegister.js';
 import { ActionSaveAddress, ActionGetAddress, ActionUpdateUser } from '../../../../store/actions/ActionOrder.js';
-import { FieldSelect } from '../../../../components/Fields.js';
+import { FieldSelect, fieldSelectPicker, SelectPicker } from '../../../../components/Fields.js';
 
 let screenWidth = Dimensions.get('window').width;
 let screenHeight = Dimensions.get('window').height;
@@ -93,13 +93,20 @@ class ProfileScreen extends Component {
         }
         return (
             <SafeAreaView style={styles.mainContainer}>
+                <View style={{ flexDirection: 'row', alignItems:'center', justifyContent:'center'}}>
+                    <View style={{flex:1, marginLeft:15}}>
+                        <Text style={{ marginTop: 8, color: '#58647a'}}>
+                            Hola!{"\n"}{dataUser ? dataUser.firstname : 'usuario' }
+                        </Text>
+                    </View>
+                    <View style={{ flex:3, flexDirection:'row', alignItems:'center'}}>
+                        <Image style={styles.userImageContainer}
+                        source={require('../../../../../assets/icons/logo-100.png')}/>
+                        <Text style={{fontSize:30, fontFamily:'HermanoAlto Round', paddingTop:12}}>DOMIS</Text>
+                    </View>
+                </View>
                 <ScrollView style={styles.mainContainer}>
                 <View style={styles.topContainer}>
-                    <Image style={styles.userImageContainer}
-                           source={require('../../../../../assets/images/maxresdefault.jpg')}/>
-                    <Text style={{marginLeft: 15, marginTop: 8, color: '#58647a'}}>
-                        Hola!{"\n"}{dataUser ? dataUser.firstname : 'usuario' }
-                    </Text>
                     <View style={{paddingBottom:10, paddingLeft:20}}>
                         <Text style={{
                             marginRight: 25,
@@ -113,10 +120,6 @@ class ProfileScreen extends Component {
                     </View>
                 </View>  
                 <View style={{flex:1, flexDirection:'row', marginBottom:10}}>
-                    {/* <TouchableOpacity onPress={() => this.setState({editable : !this.state.editable})}>
-                        <Image style={styles.edit}
-                            source={require('../../../../../assets/icons/edit.png')}/>  
-                    </TouchableOpacity>    */}
                     <TouchableOpacity 
                     style={styles.touchableAddress}
                     onPress={() => this.setState({editable : !this.state.editable})}>
@@ -260,6 +263,13 @@ const styles = StyleSheet.create({
         marginTop: 5,
         height: 50,
         width: 50,
+    },
+    userImageContainer: {
+        marginLeft: 15,
+        marginTop: 5,
+        height: screenWidth * 40 / 375,
+        width: screenWidth * 40 / 375,
+        borderRadius: (screenWidth * 50 / 375) / 2,
     },
     edit:{
         height:30,

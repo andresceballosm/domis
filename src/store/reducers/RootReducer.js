@@ -5,7 +5,7 @@ import ReducerLoading from './ReducerLoading'
 import { ReducerPosition } from './ReducerPosition'
 import { ReducerStores, ReducerCategories, ReducerProducts, ReducerStore, ReducerUploadImage } from './ReducerStores'
 import { ReducerBasket } from './ReducerBasket'
-import { ReducerOrders, ReducerOrderDetails, ReducerUser } from './ReducerOrders'
+import { ReducerOrders, ReducerOrderDetails, ReducerUser, ReducerOrdersByDate } from './ReducerOrders'
 import { ReducerAddress } from './ReducerAddress'
 
 export default(reducers = combineReducers({
@@ -23,5 +23,6 @@ export default(reducers = combineReducers({
     ReducerAddress,
     ReducerTypeUser,
     ReducerStore,
-    ReducerUploadImage
+    ReducerUploadImage,
+    ReducerOrdersByDate
 }));
