@@ -28,7 +28,6 @@ class DeliveryForm extends Component {
         loadData: false
     }
     render(){
-        console.log('this.props', this.props)
         if(this.props.data.length !== null && this.state.loadData === false){
             if(this.props.data.length !== 0 && !this.props.data.error){
                 this.setState({loadData:true})

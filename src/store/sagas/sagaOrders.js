@@ -1,7 +1,7 @@
-import { call, takeEvery, put } from 'redux-saga/effects';
+import { call, takeEvery, put, fork, take, select } from 'redux-saga/effects';
+import { eventChannel } from 'redux-saga';
 import CONSTANTS from '../CONSTANTS';
 import { ActionStopLoading } from '../actions/ActionApp';
-import { ActionLogin } from '../actions/ActionsAuthentication';
 import { POST, GET, GETSIMPLE, PUT } from '../../services/Calls';
 import { ActionSetOrders, ActionSetOrderDetails, ActionSetAddress, ActionGetOrders, ActionSetUser, ActionGetUser, ActionGetOrdersStore, ActionSetOrdersByDate } from '../actions/ActionOrder';
 import { ActionDataProductsOrderDetails } from '../actions/ActionStores';
@@ -14,9 +14,6 @@ const getOrders = (ref) =>
 const updateOrder = (values) => 
   dataBase.collection('orders').doc(`${values.id}`).update(values.order)
   .then(success => success);
-
-const getOrdersStore = (values) => 
-    POST( values, CONSTANTS.API_ORDERS_STORE)
 
 const getOrderDetails = ( values ) =>
     GET( values, CONSTANTS.API_GET_ORDER_DETAILS)
@@ -33,6 +30,33 @@ const updateUser = (values) =>
 
 const getUser = ref => 
   ref.get().then(user => user);
+
+  function* syncOrders (data) {
+    const ref = dataBase.collection('orders').where("store_id", "==", data.store_id);
+    const channel = eventChannel(emit => ref.onSnapshot(emit))
+    try {
+      while (true) {
+        const orders = yield take(channel)
+        yield put(ActionSetOrders(orders._docs))
+      }
+    } catch (err) {
+      console.log('err', err);
+    }
+  }
+
+  function* synOdersClient (data) {
+    const ref = dataBase.collection('orders').where("user_id", "==", data.user_id);
+    const channel = eventChannel(emit => ref.onSnapshot(emit))
+    try {
+      while (true) {
+        const orders = yield take(channel)
+        yield put(ActionSetOrders(orders._docs))
+      }
+    } catch (err) {
+      console.log('err', err);
+    }
+  }
+
 
   function* GetOrders(data) {
     try {
@@ -96,17 +120,6 @@ const getUser = ref =>
         yield put(ActionGetOrders(uid))
       }
       yield put(ActionStopLoading());
-      // yield call(updateOrder, data);
-
-      // yield put(ActionGetOrders(user_id))
-      // yield put(ActionStopLoading());
-      // if( status === 'cancelled' ){
-      //   showAlertSuccess('Pedido cancelado con exito.' )
-      // } else if( status ==='processing' ){
-      //   showAlertSuccess('Pedido aceptado con exito!, nuevo estado de pedido EN PROCESO.' )
-      // } else if(status === 'deliv'){
-
-      // }
     } catch (error) {
       console.log('error in order' ,error)
       yield put(ActionStopLoading());
@@ -166,6 +179,8 @@ const getUser = ref =>
 
   export const sagaOrders = [
     //take every listening to the dispatch
+    takeEvery(CONSTANTS.GET_ORDERS_LISTENER, syncOrders),
+    takeEvery(CONSTANTS.GET_ORDERS_LISTENER_USER, synOdersClient),
     takeEvery(CONSTANTS.GET_ORDERS, GetOrders),
     takeEvery(CONSTANTS.GET_ORDER_DETAILS, GetOrderDetails),
     takeEvery(CONSTANTS.UPDATE_USER, UpdateUser),
@@ -173,5 +188,5 @@ const getUser = ref =>
     takeEvery(CONSTANTS.PUT_ORDER, UpdateOrder),
     takeEvery(CONSTANTS.GET_ORDERS_STORE , GetOrdersStore),
     takeEvery(CONSTANTS.GET_ORDERS_STORE_DATE , GetOrdersStoreByDate),
-    takeEvery(CONSTANTS.GET_USER, GetUser )
+    takeEvery(CONSTANTS.GET_USER, GetUser ),
   ]

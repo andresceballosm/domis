@@ -11,10 +11,11 @@ import {
   ScrollView, 
   Image,
   RefreshControl } from 'react-native'
-import { CardOrder } from '../../../../components/CardOrder'
+import { CardOrder, ListOrder } from '../../../../components/CardOrder'
 import { Transition} from 'react-navigation-fluid-transitions'
 import { ActionGetOrders, ActionGetOrderDetails } from '../../../../store/actions/ActionOrder';
 import { ActionSetLoading } from '../../../../store/actions/ActionApp';
+import { ActionGetOrdersListenerUser } from '../../../../store/actions/ActionOrder';
 
 let screenWidth = Dimensions.get('window').width;
 
@@ -50,44 +51,46 @@ class OrdersScreen extends Component {
       const { orders } = this.props;
         return (
             <SafeAreaView style={{flex:1,backgroundColor:'white'}}>
-              <ScrollView  
-                refreshControl= {
-                  <RefreshControl
-                    refreshing={this.state.refreshing}
-                    onRefresh={this._onRefresh}
-                  />
-                }
-              >
+              <View style={{flex:1}}>
                 <Text style={styles.titleHeader}> Ordenes </Text>      
                 { orders.length > 0 ? 
                   <View>
-                    <View style={styles.header}>
-                      { this.validatePendings() ?
-                          <View style={styles.viewNoProductsSmall}>
-                            <Image style={{height:140,width:200}}
-                            source={require('../../../../../assets/images/noorders.png')}/>
-                            <Text style={styles.titleNoProductsSmall}>No hay ordenes pendientes</Text>
-                          </View>
-                        :
-                        <FlatList
-                          showsHorizontalScrollIndicator={false}
-                          horizontal={true}
-                          data={orders}
-                          extraData={orders}
-                          renderItem={({item, index}) => this.renderOrdersPending(item, index)}
+                      <ScrollView  
+                      refreshControl= {
+                        <RefreshControl
+                          refreshing={this.state.refreshing}
+                          onRefresh={this._onRefresh}
                         /> 
-                      }
-                    </View>
+                      }>
+                      <View style={styles.header}>
+                        { this.validatePendings() ?
+                            <View style={styles.viewNoProductsSmall}>
+                              <Image style={{height:140,width:200}}
+                              source={require('../../../../../assets/images/noorders.png')}/>
+                              <Text style={styles.titleNoProductsSmall}>No hay ordenes pendientes</Text>
+                            </View>
+                          :
+                          <FlatList
+                            showsHorizontalScrollIndicator={false}
+                            horizontal={true}
+                            data={orders}
+                            extraData={orders}
+                            renderItem={({item, index}) => this.renderOrdersPending(item, index)}
+                          /> 
+                        }
+                      </View>
+                    </ScrollView>
                     <View style={styles.body}>
-                      <Text style={styles.titleHeaderSmall}>Historial</Text>
-                      <FlatList
-                        numColumns={2}
-                        showsHorizontalScrollIndicator={false}
-                        horizontal={false}
-                        data={orders.sort((a, b) =>  a._data.created_at - b._data.created_at)}
+                      <View style={{marginBottom:10}}>
+                        <Text style={styles.titleHeaderSmall}>HISTORIAL</Text>
+                      </View>
+                      <View style={{width:'100%', marginBottom:15}}>                  
+                        <FlatList
+                        data={orders}
                         extraData={orders}
                         renderItem={({item, index}) => this.renderOrdersFinished(item, index)}
-                      /> 
+                        /> 
+                      </View>
                     </View>
                   </View>
                   :  
@@ -97,10 +100,7 @@ class OrdersScreen extends Component {
                     source={require('../../../../../assets/images/noorders.png')}/>
                   </View>
                 }
-                <View>
-                  
-                </View>
-              </ScrollView>
+              </View>
             </SafeAreaView>
         )
     }
@@ -158,13 +158,13 @@ class OrdersScreen extends Component {
     if(item._data.status === 'delivered' || item._data.status === 'cancelled'){
       return (
         <TouchableOpacity
-        style={{paddingTop:10}}
+        style={{ width:'99%', marginBottom:5}}
         activeOpacity = {1}
         onPress={() => { 
           this.getOrderDetails(item['id'], color, item._data)
         }}>
           <Transition shared={item['key']}> 
-            <CardOrder item={item} index = {index} color={color}/>
+            <ListOrder item={item} index = {index} color={color}/>
           </Transition>
         </TouchableOpacity>
       )
@@ -212,11 +212,12 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.29,
     shadowRadius: 6,
 
-    elevation: 7,
+    elevation: 3,
     borderRadius:12
   },
   body:{
-    alignItems:'center'
+    alignItems:'center',
+    height:400
   },
   titleNoProducts:{
     fontSize:20,
@@ -238,6 +239,10 @@ const styles = StyleSheet.create({
     marginTop:5,
     alignItems:'center',
     justifyContent:'center'
+  },
+  titleHeaderSmall:{
+    fontWeight:'bold',
+    fontSize:18
   }
 })
 
@@ -249,7 +254,8 @@ const mapStateToProps = state => ({
 
 const mapDispatchToProps = dispatch => ({
   getOrders:(user_id) => {
-      dispatch(ActionGetOrders(user_id))
+    dispatch(ActionGetOrders(user_id))
+    dispatch(ActionGetOrdersListenerUser(user_id))
   },
   getOrderDetails: (token, id) => {
     dispatch(ActionSetLoading());

@@ -5,26 +5,24 @@ import Selection from './src/Selection';
 import { StackNoAuthenticated } from './src/pages/NoAuthenticated/StackNoAuthenticated';
 import { LoadingSmall } from './src/components/LoadingSmall';
 import { authentication } from './src/services/Firebase';
-import { ActionSetSesion, ActionLogout } from './src/store/actions/ActionsAuthentication';
+import { ActionSetSesion, ActionLogout, ActionSetSesionGoogle } from './src/store/actions/ActionsAuthentication';
 
 class App extends Component {
-  componentDidMount() {
+
+  componentDidMount(){
     this.props.authentication();
   }
-  render() {
-    const LoadingStatus = () => {
-      if (this.props.loading == 'true')
-         return <LoadingSmall />      
-      return null;
-    }; 
 
+  render() {
     return (
       <View style={styles.Content}>
-          { LoadingStatus()}
-          { this.props.user ? 
-            <Selection user={this.props.user}/>
-            : 
-            <StackNoAuthenticated /> }
+        { this.props.user ? 
+          <Selection user={this.props.user}/>
+          : 
+          <StackNoAuthenticated /> }
+        { this.props.loading === 'true' && (
+          <LoadingSmall />
+        )}
       </View>
     );
   }
@@ -46,10 +44,9 @@ const mapStateToProps = state => {
 const mapDispatchToProps = dispatch => ({
   authentication: () => {
     authentication.onAuthStateChanged((usuario) => {
+      console.log('usuario', usuario)
       if (usuario) {
-        //dispatch(ActionGetTokenNotifications(usuario._user.uid));
-        console.log('usuario que inicia', usuario)
-        dispatch(ActionSetSesion(usuario));
+        dispatch(ActionSetSesionGoogle(usuario));
       } else {
         dispatch(ActionLogout());
       }

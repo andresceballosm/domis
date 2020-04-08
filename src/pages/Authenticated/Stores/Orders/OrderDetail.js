@@ -10,6 +10,7 @@ import { ButtonRegister } from '../../../../components/ButtonRegister';
 import StepIndicator from 'react-native-step-indicator';
 import { CardBasket } from '../../../../components/CardBasket'
 import { showAlertError } from '../../../../components/Alerts'
+import { ActionSendPushNotication } from '../../../../store/actions/ActionNotifications'
 
 let screenWidth = Dimensions.get('window').width;
 let screenHeight = Dimensions.get('window').height;
@@ -35,7 +36,7 @@ const customStyles = {
   stepIndicatorLabelFinishedColor: '#ffffff',
   stepIndicatorLabelUnFinishedColor: '#aaaaaa',
   labelColor: '#999999',
-  labelSize: 12,
+  labelSize: 9,
   currentStepLabelColor: '#28c996'
 }
 var productsOrigin= [];
@@ -141,6 +142,7 @@ class OrderDetail extends Component {
     }
 
     cancelOrder = () => {
+        const order = this.props.navigation.getParam('order', '');
         Alert.alert(
             'Cancelar pedido',
             'Esta seguro(a) que desea cancelar su pedido.',
@@ -150,13 +152,16 @@ class OrderDetail extends Component {
                     onPress: () => console.log('Cancel Pressed'),
                     style: 'cancel',
                 },
-                {   text: 'Aceptar', onPress: () =>  this.sendOrder('cancelled') },
+                {   text: 'Aceptar', onPress: () => {
+                    this.sendOrder('cancelled')
+                }},
             ],
             {cancelable: false},
         );       
     }
 
     acceptOrder = () => {
+        const order = this.props.navigation.getParam('order', '');
         Alert.alert(
             'Aceptar pedido',
             'Esta seguro(a) que desea aceptar este pedido.',
@@ -166,7 +171,17 @@ class OrderDetail extends Component {
                     onPress: () => console.log('Cancel Pressed'),
                     style: 'cancel',
                 },
-                {   text: 'Aceptar', onPress: () =>  this.sendOrder('accepted') },
+                {   text: 'Aceptar', onPress: () =>  { 
+                    console.log('order aceptada', order);
+                    // this.props.sendPushNotification(
+                    //     [order.user_id], 
+                    //     `${order.store_name} esta procesando tú pedido.`, 
+                    //     'Nuevo pedido 2', 
+                    //     'MatchApp', 
+                    //     new Date()
+                    // ) 
+                    this.sendOrder('accepted')
+                }},
             ],
             {cancelable: false},
         );  
@@ -206,6 +221,25 @@ class OrderDetail extends Component {
         }
         const store_id = this.props.store.store.store_id;
         this.props.editOrder( id, order, store_id, navigation )
+        if( areChanges ){
+            this.props.sendPushNotification(
+                [order.user_id], 
+                `${order.store_name} modificó tú pedido.`, 
+                new Date()
+            )
+        } else if( newStatus === 'cancelled') {
+            this.props.sendPushNotification(
+                [order.user_id], 
+                `${order.store_name} a canceladó tú pedido.`, 
+                new Date()
+            )
+        } else if(newStatus === 'accepted'){
+            this.props.sendPushNotification(
+                [order.user_id], 
+                `${order.store_name} esta procesando tú pedido.`, 
+                new Date()
+            )
+        }
     }
 
     deliveredOrder = (type) => {
@@ -225,6 +259,13 @@ class OrderDetail extends Component {
         }
  
         this.props.editOrder( id, order, store_id, navigation )
+        if(type == 'dispatched'){
+            this.props.sendPushNotification(
+                [order.owner_id], 
+                `${order.store_name} despachó su pedido!`, 
+                new Date()
+            )
+        }
     }
 
     status = (status) => {
@@ -252,7 +293,7 @@ class OrderDetail extends Component {
         const item = this.props.navigation.getParam('item', '');
         const color = this.props.navigation.getParam('color', '');
         const order = this.props.navigation.getParam('order', '');
-
+        console.log('order.status', order.status)
         return (
         <View style={styles.DetailMainContainer}>
             <Transition shared={item}>
@@ -277,13 +318,19 @@ class OrderDetail extends Component {
                             color: 'white',
                             fontWeight: 'bold',
                             marginLeft:10,
-                            fontSize: scaleToDimension(16),
+                            fontSize: scaleToDimension(14),
+                        }}>Cliente: {order.client}</Text>
+                         <Text style={{
+                            color: 'white',
+                            fontWeight: 'bold',
+                            marginLeft:10,
+                            fontSize: scaleToDimension(14),
                         }}>Dirección: {order.address}</Text>
                          <Text style={{
                             color: 'white',
                             fontWeight: 'bold',
                             marginLeft:10,
-                            fontSize: scaleToDimension(16),
+                            fontSize: scaleToDimension(14),
                         }}>Teléfono: {order.phone}</Text>
                         <Text style={{
                             color: 'white',
@@ -310,8 +357,8 @@ class OrderDetail extends Component {
                     currentPosition={this.status(order.status)}
                     labels={labels}
                 /> 
-                { order.status === 'pending' ?
-                <View style={[ styles.btnAction, { flexDirection:'row', justifyContent:'center'} ]}>
+                { order.status === 'pending' && (
+                <View style={[ styles.btnAction, { flexDirection:'row', justifyContent:'center',  marginTop:15 } ]}>
                     <ButtonRegister 
                     title="Aceptar" 
                     width={150}
@@ -332,10 +379,10 @@ class OrderDetail extends Component {
                     invalid={ this.props.invalid } 
                     color="#8f4d4e"
                     />
-                </View> : <View></View>
-                }
-                { order.status === 'approved' || order.status === 'processing'  ?
-                <View style={styles.btnAction}>
+                </View> 
+                )}
+                { order.status === 'approved' || order.status === 'processing'  ? 
+                <View style={[styles.btnAction, { marginTop:15 }]}>
                     <ButtonRegister 
                     title="Despachar" 
                     width={230}
@@ -344,10 +391,10 @@ class OrderDetail extends Component {
                     invalid={ this.props.invalid } 
                     color="black"
                     />
-                </View> : <View></View>
+                </View> : <View/>
                 }
-                { order.status === 'dispatched' ?
-                <View style={styles.btnAction}>
+                { order.status === 'dispatched' && (
+                <View style={[styles.btnAction, { marginTop:15 }]}>
                     <ButtonRegister 
                     title="Ya entregué el pedido!" 
                     width={230}
@@ -356,8 +403,8 @@ class OrderDetail extends Component {
                     invalid={ this.props.invalid } 
                     color="black"
                     />
-                </View> : <View></View>
-                }
+                </View>
+                )}
             </View>
         </View>
         )
@@ -410,7 +457,7 @@ const styles = StyleSheet.create({
     },
     detailTopContainer: {
         position:'relative',
-        height: scaleToDimension(150),
+        height: scaleToDimension(170),
         width: screenWidth,
         borderBottomLeftRadius: 30,
         borderBottomRightRadius:30,
@@ -422,7 +469,7 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.29,
         shadowRadius: 4.65,
 
-        elevation: 7,
+        elevation: 3,
         borderRadius:10
     },
     btnAction:{
@@ -484,7 +531,9 @@ const mapStateToProps = state => ({
     reduceQuantity:(id ) => {
         dispatch(ActionReducerProductOrder(id, orderId))
     },
-
+    sendPushNotification:(devices, body, subtitle, path, id) => {
+        dispatch(ActionSendPushNotication({devices, body, subtitle, path, id}));
+    }
   });
   
 export default connect(mapStateToProps, mapDispatchToProps)(OrderDetail);

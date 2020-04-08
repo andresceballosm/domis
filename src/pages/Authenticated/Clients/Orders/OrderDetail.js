@@ -7,17 +7,17 @@ import { ActionSetLoading } from '../../../../store/actions/ActionApp';
 import { ActionGetOrderDetails, ActionPutOrder } from '../../../../store/actions/ActionOrder';
 import { CardOrderDetail } from '../../../../components/CardOrderDetail';
 import { ButtonRegister, ButtonBackDown } from '../../../../components/ButtonRegister';
+import { ActionGetStore, ActionGetStoresById } from '../../../../store/actions/ActionStores'
+import { ActionSendPushNotication } from '../../../../store/actions/ActionNotifications'
 
 let screenWidth = Dimensions.get('window').width;
 let screenHeight = Dimensions.get('window').height;
 
 class OrderDetail extends Component {
-    componentWillMount(){
-        const id = this.props.navigation.getParam('item', '');
-    }
 
     acceptOrder = (id) => {
         const order = this.props.navigation.getParam('order', '');
+        console.log('order', order);
         const navigation = this.props.navigation;
         Object.assign( order, {
             status : 'approved',
@@ -31,7 +31,17 @@ class OrderDetail extends Component {
                     onPress: () => console.log('Cancel Pressed'),
                     style: 'cancel',
                 },
-                {   text: 'Aceptar', onPress: () =>  this.props.updateOrder(  id, order, navigation, this.props.user.uid ) },
+                {   text: 'Aceptar', onPress: () =>  {
+                    this.props.updateOrder(  id, order, navigation, this.props.user.uid );
+                    console.log('order.owner_id',order.owner_id);
+                    this.props.sendPushNotification(
+                        [order.owner_id], 
+                        `${order.client} aceptó la modificación del pedido!`, 
+                        'Nuevo pedido 2', 
+                        'MatchApp', 
+                        new Date()
+                    )
+                }},
             ],
             {cancelable: false},
         );  
@@ -53,7 +63,16 @@ class OrderDetail extends Component {
                     onPress: () => console.log('Cancel Pressed'),
                     style: 'cancel',
                 },
-                {   text: 'Aceptar', onPress: () =>  this.props.updateOrder(  id, order, navigation, this.props.user.uid ) },
+                {   text: 'Aceptar', onPress: () => {
+                    this.props.updateOrder(  id, order, navigation, this.props.user.uid )
+                    this.props.sendPushNotification(
+                        [order.owner_id], 
+                        `Ups! ${order.client} canceló su pedido!`, 
+                        'Nuevo pedido 2', 
+                        'MatchApp', 
+                        new Date()
+                    )
+                }},
             ],
             { cancelable: false },
         );       
@@ -103,10 +122,20 @@ class OrderDetail extends Component {
                 </View>
             </Transition>
                 <ScrollView style={{flex:1}}>
+                    <View style={styles.list}>
+                        <FlatList
+                        showsHorizontalScrollIndicator={false}
+                        horizontal={false}
+                        extraData={products}
+                        data={products}
+                        renderItem={({item, index}) => this.renderCardProduct(item, index)}
+                        />
+                    </View>
                     {  order.status === 'unapproved'  ?
                     <View style={styles.btnAction}>
                         <View style={{alignItems:'center', justifyContent:'center'}}>
-                            <View style={{flexDirection:'row', justifyContent:'center', alignItems:'center'}}>
+                            <Text style={{textAlign:'center'}}>Nota: Su pedido ha sido modificado debido a las existencias del negocio.</Text>
+                            <View style={{flexDirection:'row', justifyContent:'center', alignItems:'center', marginTop:15}}>
                                 <ButtonRegister 
                                 title="Aceptar pedido" 
                                 width={150}
@@ -139,15 +168,6 @@ class OrderDetail extends Component {
                         />
                     </View> : <View></View>
                     }
-                    <View style={styles.list}>
-                        <FlatList
-                        showsHorizontalScrollIndicator={false}
-                        horizontal={false}
-                        extraData={products}
-                        data={products}
-                        renderItem={({item, index}) => this.renderCardProduct(item, index)}
-                        />
-                    </View>
                     { order.status === 'pending' || order.status === 'processing'  ?
                     <View style={styles.btnAction}>
                         <ButtonRegister 
@@ -212,7 +232,7 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.29,
         shadowRadius: 4.65,
 
-        elevation: 7,
+        elevation: 3,
         borderRadius:10
     },
     btnAction:{
@@ -225,12 +245,15 @@ const styles = StyleSheet.create({
     }
 })
 
-const mapStateToProps = state => ({
-    user : state.ReducerSesion && state.ReducerSesion.user ? state.ReducerSesion.user : false,
-    loading: state.ReducerLoading.loading,
-    details: state.ReducerOrderDetails.details,
-    products: state.ReducerProducts.productsDetails
-});
+const mapStateToProps = state => {
+    console.log('state', state);
+    return {
+        user : state.ReducerSesion && state.ReducerSesion.user ? state.ReducerSesion.user : false,
+        loading: state.ReducerLoading.loading,
+        details: state.ReducerOrderDetails.details,
+        products: state.ReducerProducts.productsDetails
+    }
+};
   
   const mapDispatchToProps = dispatch => ({
     getOrderDetails: (token, id) => {
@@ -243,6 +266,9 @@ const mapStateToProps = state => ({
         let data = {id, order, uid, type}
         dispatch(ActionPutOrder(data))
         navigation.goBack()
+    },
+    sendPushNotification:(devices, body, subtitle, path, id) => {
+        dispatch(ActionSendPushNotication({devices, body, subtitle, path, id}));
     }
   });
   

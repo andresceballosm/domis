@@ -55,6 +55,7 @@ class ProfileScreen extends Component {
 
         const newAddress = { address, phone, note };
         var adressNow = this.props.dataUser.address;
+        console.log('adressNow',adressNow);
         if(adressNow === undefined){
             this.props.dataUser.address = [];
             this.props.dataUser.address.push(newAddress);

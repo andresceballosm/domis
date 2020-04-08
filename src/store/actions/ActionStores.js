@@ -10,6 +10,11 @@ export const ActionGetStoresByType = (storetype, geohash, range) => ({
     storetype, geohash, range
 });
 
+export const ActionGetStoresById = (id) => ({
+    type: CONSTANTS.GET_STORES_BY_ID,
+    id
+});
+
 export const ActionDataStores = (stores) => ({
     type: CONSTANTS.SET_STORES_BY_TYPE,
     stores

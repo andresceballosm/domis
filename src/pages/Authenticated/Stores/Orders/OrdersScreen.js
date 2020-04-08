@@ -8,13 +8,17 @@ import {
   Dimensions,
   TouchableOpacity, 
   FlatList,
+  Image,
   ScrollView, 
+  Modal,
   RefreshControl } from 'react-native'
 import moment from "moment";
-import { CardOrder } from '../../../../components/CardOrder'
+import { CardOrder, ListOrder } from '../../../../components/CardOrder'
 import { Transition} from 'react-navigation-fluid-transitions'
-import { ActionGetOrders, ActionGetOrderDetails, ActionGetOrdersStore } from '../../../../store/actions/ActionOrder';
+import { ActionGetOrders, ActionGetOrderDetails, ActionGetOrdersStore, ActionGetOrdersListener } from '../../../../store/actions/ActionOrder';
 import { ActionSetLoading } from '../../../../store/actions/ActionApp';
+import { FieldDate } from '../../../../components/Fields';
+import { ButtonRegister } from '../../../../components/ButtonRegister';
 
 let screenWidth = Dimensions.get('window').width;
 
@@ -23,6 +27,12 @@ class OrdersScreen extends Component {
       super(props);
       this.state = {
         refreshing: false,
+        modalVisible: false,
+        visibleDateFrom: false,
+        dateFrom: '',
+        visibleDateTo: false,
+        dateTo: '',
+        orders : []
       };
     }
     componentDidMount(){
@@ -32,6 +42,24 @@ class OrdersScreen extends Component {
     _onRefresh = () => {
       this.getOrders()
       this.setState({refreshing: false});
+    }
+
+    setFilter = () => {
+      let dateFrom = new Date(this.state.dateFrom);
+      let dateTo = new Date(this.state.dateTo);
+
+      let filterOrders = this.props.orders.filter((order) => { 
+        let date = new Date(order._data.created_at);  
+        return dateFrom <= date && date <= dateTo
+      })
+      console.log('filterOrders', filterOrders)
+      this.setState({modalVisible: false, orders : filterOrders})
+    }
+
+    componentWillReceiveProps(newProps){
+      if(newProps.orders !== this.props.orders){
+        this.setState({ orders : newProps.orders })
+      }
     }
 
     getOrders = () => {
@@ -57,21 +85,21 @@ class OrdersScreen extends Component {
     }
 
     render() {
-      const { orders } = this.props;
+      const { orders } = this.state;
         return (
             <SafeAreaView style={{flex:1,backgroundColor:'white'}}>
-              <ScrollView  
-                refreshControl={
-                  <RefreshControl
-                    refreshing={this.state.refreshing}
-                    onRefresh={this._onRefresh}
-                  />
-                }
-              >
+              <View style={{flex:1}}>
                 <Text style={styles.titleHeader}> Ordenes </Text>      
                 { orders ? 
                   <View>
-                    <View style={styles.header}>
+                    <ScrollView  
+                    refreshControl= {
+                      <RefreshControl
+                        refreshing={this.state.refreshing}
+                        onRefresh={this._onRefresh}
+                      /> 
+                    }>
+                      <View style={styles.header}>
                       { this.validatePendings() ?
                         <Text style={{fontSize:18, textAlign:'center'}}>No hay ordenes pendientes</Text>
                         :
@@ -83,26 +111,91 @@ class OrdersScreen extends Component {
                           renderItem={({item, index}) => this.renderOrdersPending(item, index)}
                         /> 
                       }
-                    </View>
+                      </View>
+                   </ScrollView>
                     <View style={styles.body}>
-                        <Text style={styles.titleHeaderSmall}>Historial</Text>
+                      <View style={{marginBottom:12, marginTop:12, flexDirection:'row'}}>
+                        <View style={{flex:2, paddingLeft:140}}>
+                          <Text style={styles.titleHeaderSmall}>HISTORIAL</Text>
+                        </View>
+                        <TouchableOpacity 
+                        onPress={() => this.setState({modalVisible: true})} 
+                        style={{flex:1, flexDirection:'row'}}>
+                          <Image style={{width:20, height:20}}
+                          source={require('../../../../../assets/icons/filter.png')} />
+                          <Text style={{}}>Filtrar</Text>
+                        </TouchableOpacity>
+                      </View>   
+                      <View style={{width:'100%', marginBottom:15}}>                  
                         <FlatList
-                        numColumns={2}
-                        showsHorizontalScrollIndicator={false}
-                        horizontal={false}
                         data={orders}
-                        data={orders.sort((a, b) =>  a - b)}
                         extraData={orders}
                         renderItem={({item, index}) => this.renderOrdersFinished(item, index)}
-                      /> 
+                        /> 
+                      </View>
                     </View>
                   </View>
                   :  <Text>No tienes ordenes aún</Text>
                 }
-                <View>
-                  
-                </View>
-              </ScrollView>
+              </View>
+              <Modal 
+              transparent={true}
+              initialNumToRender={1}
+              animationType="slide"
+              animationInTiming={1000}
+              animationOutTiming={600}
+              visible={this.state.modalVisible}
+              style={styles.modal}>
+                  <View style={styles.modal}>
+                      <View style={{flexDirection:'row'}}>
+                        <View style={{flex:2, alignItems:'flex-start'}}>
+                          <TouchableOpacity onPress={() => this.setState({modalVisible:false }) }>
+                            <Text style={{marginLeft:12, marginTop:12, fontSize:20, color:'black'}}>X</Text>
+                          </TouchableOpacity>
+                        </View>
+                        <View style={{ flex:1,alignItems:'flex-end'}}>
+                          <TouchableOpacity onPress={() => this.setState({
+                            modalVisible:false,  
+                            orders : this.props.orders,
+                            dateFrom: '',
+                            dateTo: ''
+                          })}>
+                            <Text style={{marginLeft:12, marginTop:12, fontSize:12, color:'black'}}>Eliminar Filtro</Text>
+                          </TouchableOpacity>
+                        </View>
+                      </View>
+                      <Text style={{textAlign:'center', fontSize:16}}>Filtrar</Text>
+                      <View style={{marginTop:12, marginBottom:12}}>
+                        <FieldDate  
+                        label="Desde" 
+                        editable={true}
+                        value={this.state.dateFrom}
+                        action={(date) => this.setState({dateFrom : date, visibleDateFrom : false})}
+                        visible={this.state.visibleDateFrom}  
+                        isVisible={(value) => {
+                          this.setState({visibleDateFrom:value})
+                        }}/>
+                        <FieldDate  
+                        label="A" 
+                        editable={true}
+                        value={this.state.dateTo}
+                        action={(date) => this.setState({dateTo : date, visibleDateTo : false})}
+                        visible={this.state.visibleDateTo }  
+                        isVisible={(value) => {
+                          this.setState({visibleDateTo:value})
+                        }}/>
+                      </View>
+                      <View style={{alignItems:'center'}}>
+                        <ButtonRegister
+                        title='Aplicar' 
+                        width={150}
+                        fontSize={12}
+                        click={ () => this.setFilter() }                           
+                        invalid={ !this.state.dateFrom ||  !this.state.dateTo } 
+                        color="black"/>
+                      </View>
+                  </View>
+              </Modal>
             </SafeAreaView>
         )
     }
@@ -142,7 +235,7 @@ class OrdersScreen extends Component {
     item._data.status === 'unapproved' || item._data.status === 'approved' || item._data.status === 'dispatched'){
       return (
         <TouchableOpacity
-        style={{paddingTop:10}}
+        style={{paddingTop:10, marginBottom:10}}
         activeOpacity = {1}
         onPress={() => { 
           this.getOrderDetails(item['id'], color, item._data)
@@ -161,13 +254,13 @@ class OrdersScreen extends Component {
     if(item._data.status === 'delivered' || item._data.status === 'cancelled'){
       return (
         <TouchableOpacity
-        style={{paddingTop:10}}
+        style={{ width:'99%', marginBottom:5}}
         activeOpacity = {1}
         onPress={() => { 
           this.getOrderDetails(item['id'], color, item._data)
         }}>
           <Transition shared={item['key']}> 
-            <CardOrder item={item} index = {index} color={color}/>
+            <ListOrder item={item} index = {index} color={color}/>
           </Transition>
         </TouchableOpacity>
       )
@@ -182,7 +275,7 @@ const scaleToDimension = (size) => {
 const styles = StyleSheet.create({
   titleHeader:{
     fontFamily:'Ubuntu-Bold',
-    color: 'black', 
+    color: '#58647a',
     fontSize: scaleToDimension(30),
     marginLeft:10,
     textAlign:'center',
@@ -207,12 +300,38 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.29,
     shadowRadius: 6,
 
-    elevation: 7,
+    elevation: 3,
     borderRadius:12
   },
   body:{
-    alignItems:'center'
-  }
+    alignItems:'center',
+    height:400
+  },
+  titleHeaderSmall:{
+    fontWeight:'bold',
+    fontSize:18
+  },
+  modal: {
+    margin: 0, 
+    borderTopLeftRadius:30,
+    borderTopRightRadius:30,
+    paddingVertical:10,
+    paddingHorizontal:10,
+    backgroundColor: 'white', 
+    shadowColor: "#000",
+    shadowOffset: {
+        width: 0,
+        height: 3,
+    },
+    shadowOpacity: 0.29,
+    shadowRadius: 4.65,
+    elevation: 7,
+    height: 250, 
+    flex:1, 
+    bottom: 0, 
+    position: 'absolute',
+    width: '100%'
+  },
 })
 
 const mapStateToProps = state => ({
@@ -224,7 +343,8 @@ const mapStateToProps = state => ({
 
 const mapDispatchToProps = dispatch => ({
   getOrders:(store_id) => {
-      dispatch(ActionGetOrdersStore(store_id))
+    dispatch(ActionGetOrdersStore(store_id));
+    dispatch(ActionGetOrdersListener(store_id))
   },
   getOrderDetails: (token, id) => {
     dispatch(ActionSetLoading());

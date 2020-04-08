@@ -20,6 +20,9 @@ class AddProductScreen extends Component {
 
     addProduct = () => {
         const values = this.props.form.values;
+        Object.assign( values, {
+            active : true
+        }) 
         const image = this.props.image;
         const store_id = this.props.store.store.store_id;
         this.props.addProduct(values, image, store_id, this.props.navigation)
@@ -30,6 +33,14 @@ class AddProductScreen extends Component {
     }
     render() {
         const { navigation, store } = this.props;
+        try {
+            if(!this.props.form.values['category_id']){
+                this.props.form.values['category_id'] = store.store.categories[0].id;
+            }
+        } catch (error) {
+            console.log(error)
+        }
+       
         return (
             <SafeAreaView style={styles.DetailMainContainer}>
                 <View style={styles.header}>

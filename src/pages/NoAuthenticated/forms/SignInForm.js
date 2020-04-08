@@ -26,19 +26,26 @@ const validate = (values) => {
 
 const SignInForm = (props) => {
   return (
-    <View style={styles.body}>
-        <Field 
-        name="email" 
-        label="Correo electrónico" 
-        keyboardType="email-address" 
-        component={fieldInputFloat} 
-        ph="email@email.com" />
-        <Field 
-        name="password" 
-        label="Contraseña" 
-        component={fieldInputFloat} 
-        password={true} 
-        ph="******" />
+      <View>
+        <View style={styles.body}>
+            <Field 
+            name="email" 
+            label="Correo electrónico" 
+            keyboardType="email-address" 
+            component={fieldInputFloat} 
+            ph="email@email.com" />
+            <Field 
+            name="password" 
+            label="Contraseña" 
+            component={fieldInputFloat} 
+            password={true} 
+            ph="******" />
+        </View>
+        <View style={{alignItems:'flex-end', marginTop:10}}>
+          <TouchableOpacity onPress={()=> props.forgotPassword()}>
+            <Text style={styles.textForget}> Olvidaste tu contraseña?</Text>
+          </TouchableOpacity>
+        </View>
         <View style={styles.button}>
             <ButtonRegister 
             title="Ingresar" 
@@ -47,7 +54,7 @@ const SignInForm = (props) => {
             color="black"
             />
         </View>
-    </View>
+      </View>
   );
 };
 
@@ -56,7 +63,13 @@ const styles = StyleSheet.create({
     alignItems:'center'
   },
   button: {
-      paddingTop:40
+      paddingTop:20,
+      alignItems:'center'
+  },
+  textForget:{
+    fontFamily:'Ubuntu-Bold',
+    fontSize:12,
+    color:'#7a7a7a'
   }
 });
 

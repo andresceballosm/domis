@@ -18,7 +18,7 @@ export const ButtonGeneral = (props) => {
         <TouchableOpacity 
         activeOpacity={ props.invalid ? 1 : 0.3 } 
         disabled={props.invalid} 
-        style={[styles.button, { backgroundColor: props.color, width: props.width ? props.width : 200}]}
+        style={[styles.button, { backgroundColor: props.color, width: props.width ? props.width : 200,  height: props.height ? props.height : 45}]}
         onPress={()=>{ props.click()}} >
             <Text style={{color:props.fontColor,fontFamily:'Ubuntu-Bold', fontSize:16}}>{props.title}</Text>
         </TouchableOpacity>
@@ -32,6 +32,17 @@ export const ButtonBackDown = (props) => {
         style={styles.navigationHeaderContainer}>
             <Image style={props.imageStyle}
             source={require('../../assets/icons/down.png')}/>
+        </TouchableOpacity>
+    )
+}
+
+export const ButtonGoogle = (props) => {
+    return (
+        <TouchableOpacity 
+        onPress={()=>{ props.click()}}
+        style={styles.buttonGoogle}>
+            <Image style={{width:30, height:30}}
+            source={require('../../assets/icons/google.png')}/>
         </TouchableOpacity>
     )
 }
@@ -60,5 +71,20 @@ const styles = StyleSheet.create({
 
         elevation: 7,
         borderRadius:10
+    },
+    buttonGoogle:{
+        alignItems:'center',
+        height:60,
+        borderRadius:180,
+        justifyContent:'center',
+        width:60,
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 3,
+        },
+        shadowOpacity: 0.29,
+        shadowRadius: 4.65,
+        elevation: 3,  
     }
 })

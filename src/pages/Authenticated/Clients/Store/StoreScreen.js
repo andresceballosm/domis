@@ -6,18 +6,18 @@ import {
     TouchableOpacity, 
     Image, 
     Dimensions,
+    TextInput,
     StyleSheet,
     FlatList,
     Platform,
-    TouchableWithoutFeedback,
-    SafeAreaView } from 'react-native'
+    TouchableWithoutFeedback } from 'react-native'
 import { Header } from 'react-navigation';
 import { Transition} from 'react-navigation-fluid-transitions'
-import { ActionGetCategoriesByStore, ActionGetProductsByCategory, ActionAddToBasket } from '../../../../store/actions/ActionStores';
+import { ActionGetProductsByCategory, ActionAddToBasket } from '../../../../store/actions/ActionStores';
 import { ActionSetLoading } from '../../../../store/actions/ActionApp';
 import { CardProduct } from '../../../../components/CardProduct';
-import { LoadingSmall } from '../../../../components/LoadingSmall';
 import { ButtonBackDown } from '../../../../components/ButtonRegister';
+import { showAlertError } from '../../../../utils/Alerts';
 
 let screenWidth = Dimensions.get('window').width;
 
@@ -34,13 +34,18 @@ const validateIcon = (icon) => {
     }
 }
 
+var products = [];
+
 class StoreScreen extends Component {
     constructor(props) {
         super(props);
         this.state = {
             selectedTapBarIndex: 0,
             selectedTapBarCategory: null,
-            categories: null
+            categories: null,
+            products:'',
+            searchText:'',
+            filter: false
         };
     }
     componentDidMount(){
@@ -67,23 +72,18 @@ class StoreScreen extends Component {
     }
 
     render(){
-        const { navigation, dataProducts, loading, basket } = this.props;
+        const { navigation, dataProducts, basket } = this.props;
         const categories = this.state.categories;
         const id = this.props.navigation.getParam('id', '');
         const item = navigation.getParam('name', '');
         const color = 'black';
-        categories !== null && this.state.selectedTapBarCategory === null ? 
-            this.setState({selectedTapBarCategory:categories[0].id}) : null;
 
-        const LoadingStatus = () => {
-            if (loading == 'true')
-               return <LoadingSmall />      
-            return null;
-        };
+        if(categories !== null && this.state.selectedTapBarCategory === null){
+            this.setState({ selectedTapBarCategory : categories[0].id }) 
+        }
 
         return (
             <View style={styles.DetailMainContainer}>
-                { LoadingStatus() }
                 <Transition shared={item}>
                     <View style={[styles.detailTopContainer, {backgroundColor:color}]}>
                         <View style={styles.navigationHeaderContainer}>
@@ -149,36 +149,63 @@ class StoreScreen extends Component {
         );
     }
 
+    searchText = (e) => {
+        this.setState({ searchText:e , filter : true})
+        const data = this.props.dataProducts.products;
+        let text = e.toLowerCase()
+        // let products = this.state.products
+        let filteredName = products.filter((item) => item._data.name.toLowerCase().match(text) || item._data.brand.toLowerCase().match(text))
+        if (!text || text === '') {
+            products = products = data.filter(product => product._data.category_id === this.state.selectedTapBarCategory);
+        } else if (!Array.isArray(filteredName) && !filteredName.length) {
+            showAlertError('No se encontro ningun producto con este nombre');
+            products = products = data.filter(product => product._data.category_id === this.state.selectedTapBarCategory);
+        } else if (Array.isArray(filteredName)) {
+            if(filteredName.length > 0){
+                products = filteredName;
+            } else {
+                this.setState({ searchText:'' })
+                showAlertError('No se encontro ningun producto con este nombre');
+                products = products = data.filter(product => product._data.category_id === this.state.selectedTapBarCategory);
+            }   
+        }
+    }
+
     renderProducts() {
         const data = this.props.dataProducts.products;
-        console.log('data', data)
-        var products = [];
-        if(data !== null){
-            products = data.filter(product => product._data.category_id === this.state.selectedTapBarCategory);
+        if(data !== null && !this.state.filter){
+            products = data.filter(product => product._data.category_id === this.state.selectedTapBarCategory && product._data.active);
         } 
-        
-        if(products.length > 0) {
-            return <FlatList
+
+        return <View style={{marginBottom:30}}> 
+            <View style={{height:45, width:'90%', marginLeft:10}}>
+                <TextInput
+                paddingLeft={12}
+                style={styles.searchBar}
+                value={this.state.searchText}
+                onChangeText={value => this.searchText(value)}
+                placeholder='Buscar producto' />
+            </View>
+            { products.length > 0 ?
+            <FlatList
             showsHorizontalScrollIndicator={false}
             horizontal={false}
             numColumns={2}
             extraData={products}
             data={products}
             renderItem={({item, index}) => this.renderCardProduct(item, index)}
-        />
-        } else {
-            return (
-                <View style={{alignItems:'center', justifyContent:'center',marginTop:20}}>
-                    <Text>No hay productos para esta categoria.</Text>
-                </View>
-            )
-        }
+            /> : 
+            <View style={{alignItems:'center', justifyContent:'center',marginTop:20}}>
+                <Text>No hay productos para esta categoria.</Text>
+            </View>
+            }
+        </View>
     }
 
     renderCardProduct(item, index) {
         if(item._data.category_id === this.state.selectedTapBarCategory)
             return <CardProduct click={(product) => { this.addBasket(product)}} item={item} index = {index}/>
-        else{
+        else {
             return (
                 <View style={{alignItems:'center', justifyContent:'center',marginTop:20}}>
                     <Text>No hay productos para esta categoria.</Text>
@@ -191,7 +218,7 @@ class StoreScreen extends Component {
         return (
             <TouchableWithoutFeedback
                 onPress={() => {
-                    this.setState({ selectedTapBarIndex: index, selectedTapBarCategory: item.id });
+                    this.setState({ selectedTapBarIndex: index, selectedTapBarCategory: item.id, filter : false, searchText : '' });
                     this.getProductsByCategory(item.id)
                 }}>
                 <View style={{justifyContent: 'center', flex: 1, marginTop:10}}>
@@ -268,7 +295,7 @@ const styles = StyleSheet.create({
             shadowOpacity: 1.0
             },
             android: {
-            elevation: 11,
+            elevation: 3,
             }
         })
     },
@@ -328,7 +355,7 @@ const styles = StyleSheet.create({
             shadowOpacity: 0.75
             },
             android: {
-            elevation: 11,
+            elevation: 3,
             }
         }),
         position: 'relative',
@@ -377,13 +404,19 @@ const styles = StyleSheet.create({
         marginBottom:10, 
         fontSize:18, 
         color:'#c44f58'
-    }
+    },
+    searchBar:{
+        flex:1,
+        backgroundColor: 'rgba(249, 247, 247, 0.8)',
+        borderRadius:12,
+        justifyContent: 'center',
+        height:65,
+        marginBottom:10
+    },
 })
 
 
-const mapStateToProps = state => {
-    console.log('state', state)
-    return{
+const mapStateToProps = state => ({
     user : state.ReducerSesion && state.ReducerSesion.user ? state.ReducerSesion.user : false,
     loading: state.ReducerLoading.loading,
     categories: state.ReducerCategories,
@@ -391,10 +424,9 @@ const mapStateToProps = state => {
     stores: state.ReducerStores,
     dataProducts: state.ReducerProducts,
     basket: state.ReducerBasket
-    }
-};
+});
   
-  const mapDispatchToProps = dispatch => ({
+const mapDispatchToProps = dispatch => ({
     getProducts: (idCategory, store_id ) => {
         dispatch(ActionSetLoading());
         dispatch(ActionGetProductsByCategory(idCategory, store_id))
@@ -405,7 +437,7 @@ const mapStateToProps = state => {
     addToCart: (product) => {
         dispatch(ActionAddToBasket(product))
     }
-  });
+});
   
 export default connect(mapStateToProps, mapDispatchToProps)(StoreScreen);
 

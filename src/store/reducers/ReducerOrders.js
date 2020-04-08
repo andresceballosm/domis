@@ -57,6 +57,7 @@ export const ReducerOrderDetails = ( state = initStateDetails , action) => {
 export const ReducerUser = ( state = null , action) => {
     switch (action.type) {
         case CONSTANTS.SET_USER:
+            console.log('action', action)
             return { ...state, user: action.user };
         case CONSTANTS.LOGOUT:
             return state; 

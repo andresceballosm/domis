@@ -104,7 +104,7 @@ class DetailsScreen extends Component {
                                 fontWeight: 'bold',
                                 fontSize: scaleToDimension(35),
                             }}>{item}</Text>
-                            <Text style={{color: 'white', fontSize: scaleToDimension(15),}}>{numberStores} negocios en tu zona</Text>
+                            <Text style={{color: 'white', fontSize: scaleToDimension(15)}}>{numberStores} negocios en tu zona</Text>
                         </View>
                     </View>
                 </Transition>
@@ -221,7 +221,7 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.29,
         shadowRadius: 4.65,
 
-        elevation: 7,
+        elevation: 3,
         borderRadius:10
     },
     map:{
@@ -245,7 +245,7 @@ const styles = StyleSheet.create({
               shadowOpacity: 1.0
             },
             android: {
-              elevation: 11,
+              elevation: 3,
             }
         })
     },
@@ -303,7 +303,7 @@ const styles = StyleSheet.create({
               shadowOpacity: 0.75
             },
             android: {
-              elevation: 11,
+              elevation: 3,
             }
         }),
         position: 'relative',
@@ -340,6 +340,7 @@ const mapStateToProps = state => {
   const mapDispatchToProps = dispatch => ({
     getStores: (storetype, geohash, range) => {
       dispatch(ActionSetLoading());
+      console.log('storetype',storetype)
       dispatch(ActionGetStoresByType(storetype, geohash, range))
     },
     setPosition:(position) => {

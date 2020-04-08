@@ -15,6 +15,16 @@ export const ActionGetOrdersStoreByDate = (store_id, date) => ({
     store_id, date
 })
 
+export const ActionGetOrdersListener = (store_id) => ({
+    type: CONSTANTS.GET_ORDERS_LISTENER,
+    store_id
+})
+
+export const ActionGetOrdersListenerUser = (user_id) => ({
+    type: CONSTANTS.GET_ORDERS_LISTENER_USER,
+    user_id
+})
+
 export const ActionSetOrders = (orders) => ({
     type: CONSTANTS.SET_ORDERS,
     orders

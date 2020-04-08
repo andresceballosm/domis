@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { Text, 
     View, 
-    SafeAreaView, 
+    Alert, 
     Dimensions, 
     FlatList, 
     Image, 
@@ -24,6 +24,7 @@ import { FieldSelect } from '../../../../components/Fields';
 import { ButtonBackDown } from '../../../../components/ButtonRegister';
 import moment from "moment";
 import 'moment/locale/es'
+import { ActionSendPushNotication } from '../../../../store/actions/ActionNotifications';
 
 let screenWidth = Dimensions.get('window').width;
 
@@ -33,11 +34,13 @@ class BasketScreen extends Component {
     }
 
     componentDidMount(){
+        console.log('this.props.user.uid',this.props.user.uid)
         this.props.getUser(this.props.user.uid)
-    }
+    };
+
     addQuantity = (idProduct) => {
         this.props.addQuantity(idProduct)
-    }
+    };
 
     reduceQuantity = (idProduct) => {
         this.props.reduceQuantity(idProduct)
@@ -51,15 +54,18 @@ class BasketScreen extends Component {
         if(this.props.basket.addedItems.length > 0){
             const store_id =  this.props.navigation.getParam('idStore', '');
             const stores = this.props.stores.stores;
-            var store_name = ''
+            var store_name = '';
+            var owner_id = '';
             for (let i = 0; i < stores.length; i++) {
                 const id = stores[i]._ref._documentPath._parts[1];
                 if(id === store_id){
+                    console.log('stores[i]._data',stores[i]._data);
                     store_name = stores[i]._data.name;
+                    owner_id = stores[i]._data.owner_id
                 }
             }
             const user_id = this.props.user.uid;
-            moment.locale('es');
+            moment.locale('en');
             const created_at = moment().format('l');
             const time = moment().format('LT');
             const total = this.props.basket.total;
@@ -67,13 +73,29 @@ class BasketScreen extends Component {
             const products = this.props.basket.addedItems;
             const address = this.props.form.values.address;
             const phone = this.props.form.values.phone;
-            var note = 'Ninguna';
-            try {
-                note = this.props.form.values.note ?  this.props.form.values.note : 'Ninguna'
-            } catch (error) {
-               console.log(error);     
-            } 
-            this.props.addOrder({store_id,store_name,total,status,products,address,phone,note,user_id, created_at, time}, this.props.navigation)
+            const client = this.props.dataUser.firstname + ' ' + this.props.dataUser.lastname;
+            Alert.alert(
+                'Realizar pedido',
+                'Esta seguro(a) de realizar su pedido.',
+                [
+                    {
+                        text: 'Cancelar',
+                        onPress: () => console.log('Cancel Pressed'),
+                        style: 'cancel',
+                    },
+                    {   text: 'Aceptar', onPress: () => {
+                        this.props.addOrder({store_id,store_name,client, total,status,products,address,phone,user_id,owner_id, created_at, time}, this.props.navigation)
+                        this.props.sendPushNotification(
+                            [owner_id], 
+                            'Tienes un nuevo pedido!', 
+                            'Nuevo pedido 2', 
+                            'MatchApp', 
+                            new Date()
+                        )
+                    } },
+                ],
+                {cancelable: false},
+            );
         } else {
             showAlertError('No hay productos en la cesta aún!')
         }
@@ -88,7 +110,7 @@ class BasketScreen extends Component {
         if(  dataUser.address && this.state.address == null ){
             this.setState({ address: dataUser.address[0]})
         }
-
+        console.log('this.props.dataUser', this.props.dataUser);
         return (
             <View style={{flex:1, backgroundColor:'white'}}>
                 <Transition style={{flex:1}} shared={'basket'}>
@@ -269,6 +291,9 @@ const mapStateToProps = state => {
         dispatch(ActionSetLoading());
         dispatch(ActionGetUser(id))
     },
+    sendPushNotification:(devices, body, subtitle, path, id) => {
+        dispatch(ActionSendPushNotication({devices, body, subtitle, path, id}));
+    }
   });
   
 export default connect(mapStateToProps, mapDispatchToProps)(BasketScreen);

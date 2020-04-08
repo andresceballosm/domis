@@ -40,10 +40,12 @@ target 'domis' do
 
   pod 'RNImageCropPicker', :path => '../node_modules/react-native-image-crop-picker'
 
-  target 'domisTests' do
-    inherit! :search_paths
-    # Pods for testing
-  end
+  pod 'RNGoogleSignin', :path => '../node_modules/@react-native-community/google-signin'
+
+  # target 'domisTests' do
+  #   inherit! :search_paths
+  #   # Pods for testing
+  # end
   pod 'RNFirebase', :path => '../node_modules/react-native-firebase/ios'
   pod 'react-native-geolocation', :path => '../node_modules/@react-native-community/geolocation'
   pod 'Firebase/Core'
@@ -54,13 +56,13 @@ target 'domis' do
   pod 'Firebase/Messaging', '~> 6.3.0'
 end
 
-target 'domis-tvOS' do
-  # Pods for domis-tvOS
+# target 'domis-tvOS' do
+#   # Pods for domis-tvOS
 
-  target 'domis-tvOSTests' do
-    inherit! :search_paths
-    # Pods for testing
-  end
+#   target 'domis-tvOSTests' do
+#     inherit! :search_paths
+#     # Pods for testing
+#   end
 
-end
+# end
 

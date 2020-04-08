@@ -21,7 +21,9 @@ import { ActionGetProductsByCategory, ActionUpdateProduct, ActionUpdateStore } f
 import { CardProductStore } from '../../../../components/CardProduct.js';
 import DropDown from '../../../../components/DropDown.js';
 import { Form, Item, Input, Label } from 'native-base';
-import { ButtonRegister } from '../../../../components/ButtonRegister.js';
+import { ButtonRegister, ButtonGeneral } from '../../../../components/ButtonRegister.js';
+import { showAlertError } from '../../../../utils/Alerts.js';
+import { LoadingSmall } from '../../../../components/LoadingSmall.js';
 
 let screenWidth = Dimensions.get('window').width;
 let screenHeight = Dimensions.get('window').height;
@@ -52,7 +54,8 @@ class ProductsScreen extends Component {
             searchText:'' ,
             filter: true,
             showFormCategory: false,
-            category: ''
+            category: '',
+            categorySelected: ''
         };
     }
 
@@ -80,7 +83,8 @@ class ProductsScreen extends Component {
         this.setState({ searchText:e })
         let text = e.toLowerCase()
         let products = this.state.products
-        let filteredName = products.filter((item) => item._data.name.toLowerCase().match(text) )
+        let filteredName = products.filter((item) => item._data.name.toLowerCase().match(text) || item._data.brand.toLowerCase().match(text))
+   
         if (!text || text === '') {
           this.setState({
             products: this.props.dataProducts.products,
@@ -89,9 +93,16 @@ class ProductsScreen extends Component {
         } else if (!Array.isArray(filteredName) && !filteredName.length) {
 
         } else if (Array.isArray(filteredName)) {
-          this.setState({
-            products: filteredName
-          })
+        if(filteredName.length > 0){
+            this.setState({
+                products: filteredName
+            })
+        } else {
+            e.slice(0, -1)
+            this.setState({ searchText:e })
+            showAlertError('No se encontro ningun producto con este nombre');
+        }   
+       
         }
     }
 
@@ -257,12 +268,13 @@ class ProductsScreen extends Component {
     
 
     render() {
-        const { store, dataProducts } = this.props;
+        const { store, dataProducts, loading } = this.props;
         const data = [
             {'title' : 'Menu',
             'items' : [ "Agregar","Categorías", "Productos"]
             },
         ]
+
         const categories = this.state.categories;
         categories !== null && this.state.selectedTapBarCategory === null ? 
             this.setState({selectedTapBarCategory:categories[0].id}) : null;
@@ -327,6 +339,26 @@ class ProductsScreen extends Component {
                     </View>
                 </View>  
                 <View style={styles.mainContainer}>
+                <View style={{ flexDirection:'row', marginTop:10, justifyContent:'center', marginRight:10}}>
+                    <View style={{ flex:2, marginTop:10, marginLeft:10,marginRight:10, justifyContent:'center',  height:45}}>
+                        <TextInput
+                        paddingLeft={12}
+                        style={styles.searchBar}
+                        value={this.state.searchText}
+                        onChangeText={value => this.searchText(value)}
+                        placeholder='Producto' />
+                    </View>
+                    <View style={{flex:1, marginLeft:10, justifyContent:'center'}}>
+                        <ButtonGeneral   
+                        title="Buscar" 
+                        width={100}
+                        height={30}
+                        click={() => this.deleteUser()}
+                        color="black"
+                        fontColor="white"/>
+                    </View>
+
+                </View>
                 {  categories !== null ?
                 <View style={{flex:1}}>
                     <FlatList
@@ -342,7 +374,7 @@ class ProductsScreen extends Component {
                         style={styles.searchBar}
                         value={this.state.searchText}
                         onChangeText={value => this.searchText(value)}
-                        placeholder='Buscar producto...' />
+                        placeholder={`Buscar producto en ${this.state.categorySelected}`} />
                     </View>
                     <ScrollView> 
                         { dataProducts !== null ?
@@ -416,7 +448,7 @@ class ProductsScreen extends Component {
         return (
             <TouchableWithoutFeedback
                 onPress={() => {
-                    this.setState({ selectedTapBarIndex: index, selectedTapBarCategory: item.id,  filter : true });
+                    this.setState({ selectedTapBarIndex: index, selectedTapBarCategory: item.id,  filter : true, categorySelected : item['name'] });
                     this.getProductsByCategory(item.id)
                 }}>
                 <View style={{justifyContent: 'center', flex: 1, marginTop:10}}>

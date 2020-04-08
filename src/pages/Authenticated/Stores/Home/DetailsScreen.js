@@ -8,13 +8,10 @@ import {
     Dimensions,
     StyleSheet,
     FlatList,
-    Platform,
-    SafeAreaView } from 'react-native'
+    Platform } from 'react-native'
 import { Transition} from 'react-navigation-fluid-transitions'
 import { Header } from 'react-navigation';
 import { MapsComponent } from '../../../../components/MapsComponent';
-import { ActionSetLoading } from '../../../../store/actions/ActionApp';
-import { ActionGetStoresByType } from '../../../../store/actions/ActionStores';
 import { ButtonBackDown } from '../../../../components/ButtonRegister';
 
 
@@ -82,13 +79,6 @@ class DetailsScreen extends Component {
                             navigation = { this.props.navigation}
                             imageStyle = {{ width:scaleToDimension(30), height:scaleToDimension(30) }}
                             />
-                            {/* <TouchableOpacity 
-                                onPress={() => {
-                                    navigation.navigate('home')
-                                }}>
-                            <Image style={{width:30, height:30}}
-                                source={require('../../../../../assets/icons/down.png')}/>
-                            </TouchableOpacity> */}
                         </View>
                         <View style={styles.detailTopBottomSubContainer}>
                             <Image style={styles.categoryImageContainer}
@@ -223,7 +213,7 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.29,
         shadowRadius: 4.65,
 
-        elevation: 7,
+        elevation: 3,
         borderRadius:10
     },
     map:{
@@ -247,7 +237,7 @@ const styles = StyleSheet.create({
               shadowOpacity: 1.0
             },
             android: {
-              elevation: 11,
+              elevation: 3,
             }
         })
     },
@@ -295,7 +285,7 @@ const styles = StyleSheet.create({
               shadowOpacity: 0.75
             },
             android: {
-              elevation: 11,
+              elevation: 3,
             }
         }),
         position: 'relative',

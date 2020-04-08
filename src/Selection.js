@@ -7,11 +7,29 @@ import { TabBarStores } from './pages/Authenticated/Stores/Routes/StoresRoutes';
 import { dataBase } from './services/Firebase';
 import { ActionSetLoading, ActionStopLoading } from './store/actions/ActionApp';
 import { ActionTypeUSer } from './store/actions/ActionsAuthentication';
+import { pushNotifications } from './services';
+import { ActionGetTokenNotifications, ActionDeleteUserToken, ActionSetNotifications } from './store/actions/ActionNotifications';
 
 class Selection extends Component {
 
   componentDidMount() {
-    this.props.getTypeUser(this.props.user.uid)
+    const { user, getTokensUser, token, deleteTokens, dateUser } = this.props;
+    this.props.getTypeUser(user.uid);
+    console.log('dateUser',dateUser)
+    pushNotifications.checkPermission(
+      user.uid, 
+      getTokensUser, 
+      token, 
+      deleteTokens
+    )
+    pushNotifications.notificationListener(this.props.setNotifications);
+    pushNotifications.notificationOpenBackListener()
+    pushNotifications.notificationOpenedListener(this.props.setNotifications);
+  }
+
+  componentWillUnmount(){
+    pushNotifications.notificationListener(this.props.setNotifications);
+    pushNotifications.notificationOpenedListener(this.props.setNotifications);
   }
 
   validateUser = () => {
@@ -24,6 +42,7 @@ class Selection extends Component {
         return <StackNoAuthenticated />
     }
   }
+
   render(){
     return (
       <View style={styles.container}>
@@ -40,20 +59,21 @@ const styles = StyleSheet.create({
 });
 
 const mapStateToProps = state => {
+  console.log('state', state);
   return {
     user : state.ReducerSesion && state.ReducerSesion.user ? state.ReducerSesion.user : false,
+    dateUser: state.ReducerUser && state.ReducerUser.user ? state.ReducerUser.user : false,
     loading: state.ReducerLoading.loading,
-    type_user:state.ReducerTypeUser
+    type_user:state.ReducerTypeUser,
+    token: state.ReducerTokenNotifications.token
   }
 };
 
 const mapDispatchToProps = dispatch => ({
   getTypeUser: (uid) => {
-    console.log('uid', uid);
     var userRef = dataBase.collection('users').doc(uid);
     userRef.get().then((data) => {
         dispatch(ActionSetLoading());
-        console.log('data', data)
         if(data.exists){
           dispatch(ActionTypeUSer(data._data.type_user))
           dispatch(ActionStopLoading());
@@ -61,6 +81,19 @@ const mapDispatchToProps = dispatch => ({
           dispatch(ActionStopLoading());
         }
     })
+  },
+  getTokensUser:(id) => {
+    dispatch(ActionSetLoading());
+    dispatch(ActionGetTokenNotifications(id))
+    dispatch(ActionStopLoading());
+  },
+  deleteTokens:(tokens) => {
+      dispatch(ActionSetLoading());
+      dispatch(ActionDeleteUserToken(tokens))
+      dispatch(ActionStopLoading());
+  },
+  setNotifications : () => {
+    dispatch(ActionSetNotifications())
   },
 });
 

@@ -1,10 +1,12 @@
 import React from 'react'
-import { Text, View, StyleSheet, Image, Dimensions } from 'react-native'
+import { Text, View, StyleSheet, Dimensions } from 'react-native'
 
 let screenWidth = Dimensions.get('window').width;
 
 export const CardOrder = (props) => {
-    const date = props.item._data.created_at;
+    let dateEn = new Date(props.item._data.created_at)
+    let options = { year: 'numeric', month: 'long', day: 'numeric' };
+    let date = dateEn.toLocaleDateString("es-ES", options).toString();
     return (
         <View style={[styles.card, {backgroundColor: props.color}]}>
             <View style={styles.viewHeader}>
@@ -18,6 +20,26 @@ export const CardOrder = (props) => {
                     <Text style={styles.text}>{date}</Text>
                     <Text style={styles.text}>{ props.item._data.time }</Text>
                 </View>
+            </View>
+        </View>
+    )
+}
+
+export const ListOrder = (props) => {
+    let dateEn = new Date(props.item._data.created_at)
+    let options = { year: 'numeric', month: 'long', day: 'numeric' };
+    let date = dateEn.toLocaleDateString("es-ES", options).toString();
+    return (
+        <View style={styles.list}>
+            <View style={{flex:2, paddingLeft:5}}>
+                <Text style={styles.storeName1}>{props.item._data.store_name}</Text>
+                <Text style={styles.storeName1}>{props.item._data.address}</Text>
+                <Text style={styles.price1}>${props.item._data.total} </Text>
+            </View>
+            <View style={{flex:1, alignItems:'center', justifyContent:'center'}}>
+                <Text style={styles.text1}>{date}</Text>
+                <Text style={styles.text1}>{ props.item._data.time }</Text>
+                <Text style={styles.status1}> { getStatus(props.item._data.status) } </Text>
             </View>
         </View>
     )
@@ -82,8 +104,26 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.29,
         shadowRadius: 6,
 
-        elevation: 7,
+        elevation: 3,
         borderRadius:12
+    },
+    list : {
+
+        backgroundColor:'red',
+        flexDirection:'row',
+        height:scaleToDimension(110), 
+        width:'100%', 
+        marginBottom:3,
+        backgroundColor:'#ffffff',
+        alignItems:'center',
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 3,
+        },
+        shadowOpacity: 0.29,
+        elevation: 2,
+  
     },
     storeName:{
         color:'#454442'
@@ -141,6 +181,14 @@ const styles = StyleSheet.create({
         fontFamily:'Ubuntu-Bold', 
         fontSize:24
     },
+    price1:{
+        color:'#28c996',
+        fontWeight: 'bold',
+        marginHorizontal:10,
+        marginTop:10,
+        fontFamily:'Ubuntu-Bold', 
+        fontSize:18
+    },
     status:{
         //textAlign:'right',
         color:'white',
@@ -148,5 +196,19 @@ const styles = StyleSheet.create({
         marginRight:5,
         marginHorizontal:12,
         fontFamily:'Ubuntu-Bold', 
+    },
+    status1:{
+        marginTop:10,
+        justifyContent:'center',
+        alignItems:'center',
+        fontFamily:'Ubuntu-Bold', 
+    },
+    storeName1:{
+        fontSize:14,
+        marginHorizontal:10,
+    },
+    text1:{
+        justifyContent:'center',
+        alignItems:'center'
     }
 })

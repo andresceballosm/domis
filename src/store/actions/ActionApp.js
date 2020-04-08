@@ -26,3 +26,12 @@ export const ActionSetPosition= (position) => ({
     type: CONSTANTS.SET_POSITION,
     position
 });
+
+export const ActionGetCategories = () => ({
+    type: CONSTANTS.GET_CATEGORIES
+})
+
+export const ActionSetCategories = (categories) => ({
+    type: CONSTANTS.SET_CATEGORIES,
+    categories
+})

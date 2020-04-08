@@ -16,13 +16,13 @@ export const ReducerBasket = ( state = initState , action) => {
                 addedItem.quantityProduct += 1 
                 return {
                         ...state,
-                        total: state.total + addedItem.price,
+                        total: state.total + parseInt(addedItem.price),
                         quantityProduct: state.quantityProduct + 1
                     }
             } else {
                 addedItem.quantityProduct = 1;
                 //calculating the total
-                let newTotal = state.total + addedItem.price 
+                let newTotal = state.total + parseInt(addedItem.price) 
                 
                 return{
                     ...state,
@@ -39,7 +39,7 @@ export const ReducerBasket = ( state = initState , action) => {
         const itemToRemove= state.addedItems.find(item=> action.id === item.id)
         let new_items = state.addedItems.filter(item=> action.id !== item.id)
         //calculating the total
-        let newTotal = state.total - (itemToRemove.price * itemToRemove.quantityProduct )
+        let newTotal = state.total - (parseInt(itemToRemove.price) * itemToRemove.quantityProduct )
         return {
             ...state,
             addedItems: new_items,
@@ -49,8 +49,8 @@ export const ReducerBasket = ( state = initState , action) => {
     }
     if( action.type === CONSTANTS.ADD_QUANTITY_PRODUCT){
         const addedItem = state.addedItems.find(item=> item.id === action.id)
-        addedItem.quantityProduct += 1 
-        let newTotal = state.total + addedItem.price
+        addedItem.quantityProduct += 1;
+        let newTotal = state.total + parseInt(addedItem.price)
         return {
             ...state,
             total: newTotal,
@@ -62,7 +62,7 @@ export const ReducerBasket = ( state = initState , action) => {
         //if the qt == 0 then it should be removed
         if(addedItem.quantityProduct === 1){
             let new_items = state.addedItems.filter(item=>item.id !== action.id)
-            let newTotal = state.total - addedItem.price
+            let newTotal = state.total - parseInt(addedItem.price)
             return{
                 ...state,
                 addedItems: new_items,
@@ -72,7 +72,7 @@ export const ReducerBasket = ( state = initState , action) => {
         }
         else {
             addedItem.quantityProduct -= 1
-            let newTotal = state.total - addedItem.price
+            let newTotal = state.total - parseInt(addedItem.price)
             return{
                 ...state,
                 total: newTotal,

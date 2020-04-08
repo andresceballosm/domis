@@ -2,7 +2,7 @@ import { call, takeEvery, put, take } from 'redux-saga/effects';
 import CONSTANTS from '../CONSTANTS';
 import moment from "moment";
 import 'moment/locale/es'
-import { ActionStopLoading } from '../actions/ActionApp';
+import { ActionStopLoading, ActionSetCategories } from '../actions/ActionApp';
 import { showAlertError, showAlertSuccess } from '../../utils/Alerts';
 import { ActionDataStores, ActionDataCategories, ActionDataProductsByCategory, ActionGetProductsByCategory, ActionClearBasket, ActionSetStore, ActionUpdateProductsByCategory, ActionDeleteProductByCategory, ActionAddProductsByCategory } from '../actions/ActionStores';
 import { dataBase, storage } from '../../services/Firebase';
@@ -30,6 +30,30 @@ const updateStore = (store) =>
   .then(success => success);
 
 
+function* GetCategoriesGeneral(){
+  try {
+    const ref = dataBase.collection('categories')
+    const categories = yield call(getProductsByCategory, ref);
+    yield put(ActionSetCategories(categories._docs));
+    yield put(ActionStopLoading());
+  } catch (error) {
+    console.log('error', error);
+      showAlertError('Se ha producido un error, intente de nuevo')
+  }
+} 
+
+function* GetStoreById(data){
+  const { id } = data;
+  try {
+    const storeRef = dataBase.collection('stores').doc(id);
+    const store = yield call(getStoresByType, storeRef);
+    console.log('store', store);
+    yield put(ActionSetStore(store));
+  } catch (error) {
+    console.log('error', error)
+  }
+}
+  
 function* GetStore(data){
   const { idOwner } = data;
   try {
@@ -99,12 +123,11 @@ function* GetCategoriesByStore(values) {
   }
 }
 
-function* GetProductsByCategory(values) {
-  const { idCategory, store_id } = values
+function* GetProductsByFind(values) {
+  const { word , store_id } = values;
   try {
     const ref = dataBase.collection(`${'products' + '_' + store_id}`).where("category_id", "==", idCategory)
     const products = yield call(getProductsByCategory, ref);
-    console.log('products in GetProductsByCategory', products);
     const lists = [];
     if(products){
       const productLists = products._docs;
@@ -113,7 +136,29 @@ function* GetProductsByCategory(values) {
         lists.push(productLists[i]);
       }
     }
-    console.log('lists', lists)
+    yield put(ActionDataProductsByCategory( lists )); 
+    yield put(ActionStopLoading());
+    
+  } catch (error) {
+    console.log(error)
+    showAlertError('Se ha producido un error')
+    yield put(ActionStopLoading());
+  }
+}
+
+function* GetProductsByCategory(values) {
+  const { idCategory, store_id } = values
+  try {
+    const ref = dataBase.collection(`${'products' + '_' + store_id}`).where("category_id", "==", idCategory)
+    const products = yield call(getProductsByCategory, ref);
+    const lists = [];
+    if(products){
+      const productLists = products._docs;
+      for (let i = 0; i < productLists.length; i++) {
+        productLists[i]._data.id = productLists[i]._ref._documentPath._parts[1];
+        lists.push(productLists[i]);
+      }
+    }
     yield put(ActionDataProductsByCategory( lists )); 
     yield put(ActionStopLoading());
     
@@ -183,7 +228,6 @@ function* AddProduct(newValues) {
       yield call(addProduct, { values, store_id, id}); 
     }
     product.id = id;
-    console.log('product',product)
     yield put(ActionAddProductsByCategory(product))
     showAlertSuccess('Se ha agregado el producto con exito!')
     yield put(ActionStopLoading());
@@ -257,6 +301,7 @@ export const sagaStores = [
   //take every listening to the dispatch
   takeEvery(CONSTANTS.GET_STORE, GetStore),
   takeEvery(CONSTANTS.GET_STORES_BY_TYPE, GetStoresByType), 
+  takeEvery(CONSTANTS.GET_STORES_BY_ID, GetStoreById),
   takeEvery(CONSTANTS.GET_CATEGORIES_BY_STORE, GetCategoriesByStore),
   takeEvery(CONSTANTS.GET_PRODUCTS_BY_CATEGORY, GetProductsByCategory),
   takeEvery(CONSTANTS.CREATE_ORDER, CreateOrder),
@@ -264,6 +309,7 @@ export const sagaStores = [
   takeEvery(CONSTANTS.UPDATE_PRODUCT, UpdateProduct),
   takeEvery(CONSTANTS.ADD_PRODUCT, AddProduct),
   takeEvery(CONSTANTS.UPDATE_STORE, UpdateStore),
-  takeEvery(CONSTANTS.DELETE_PRODUCT, DeleteProduct)
+  takeEvery(CONSTANTS.DELETE_PRODUCT, DeleteProduct),
+  takeEvery(CONSTANTS.GET_CATEGORIES, GetCategoriesGeneral)
 ]
 

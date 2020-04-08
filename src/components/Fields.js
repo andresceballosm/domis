@@ -1,8 +1,10 @@
 
 import React from 'react';
-import { View, Text, StyleSheet, TextInput, Platform, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, TextInput, Platform, Dimensions, Image, TouchableOpacity } from 'react-native';
+import DateTimePicker from 'react-native-modal-datetime-picker';
 import ModalSelector from 'react-native-modal-selector';
 import { Item, Input, Label, Picker, Icon } from 'native-base';
+import Moment from 'moment';
 
 let screenWidth = Dimensions.get('window').width;
 
@@ -60,6 +62,27 @@ export const fieldInputFloat = (props) => {
           <Icon style={{color : '#b8444a'}} name='close-circle' />
         </Item> : <View />
         }
+    </View>
+  );
+};
+
+export const InputFloat = (props) => {
+  return (
+    <View style={styles.texInput}>
+        <Item floatingLabel>
+            <Label style={props.style}>{props.label}</Label>
+            <Input 
+            style={props.style}
+            placeholder={props.ph}
+            editable={props.editable}
+            keyboardType={props.keyboardType}
+            onChangeText={ (value) => props.onChange(value)}
+            textContentType={props.textContentType}
+            secureTextEntry={props.password}
+            // value={`${props.input.value}`}
+            // onBlur={props.input.onBlur}
+            />
+        </Item>
     </View>
   );
 };
@@ -134,8 +157,9 @@ export const fieldSelectCategoriesPicker = (props) => {
           placeholder={props.label}
           headerBackButtonText="Salir"
           placeholderIconColor="#007aff"
-          selectedValue={props.input.value}
-          onValueChange={props.input.onChange}
+          onBlur={ (value) => console.log('blur', value)}
+          selectedValue={ props.input.value}
+          onValueChange={ props.input.onChange }
         >
           { props.data.map((value, idx) => { 
               return (
@@ -230,6 +254,59 @@ export const FieldSelect = (props) => {
 
 }
 
+export const FieldDate = (props) => {
+  const _handlePicker = (date) => {
+    Moment.locale('en');
+    const newdate =  Moment(date).format('l')
+    props.action(newdate)
+    _hideDatePicker();
+  };
+  const _hideDatePicker = () => {
+    console.log('')
+    props.isVisible(false);
+  };
+
+  return (
+      <View style={styles.texInput}>
+        <View style={styles.startRow}>
+            <Text style={styles.inputNameText}>{props.label}</Text>  
+        </View>
+        <View style={styles.endRow}>       
+          <View style={styles.field}>
+            <View style={{flex:1, flexDirection:'row', marginTop:5}}>
+                <TouchableOpacity
+                onPress={()=> { 
+                  if(props.editable !== undefined){
+                    if(props.editable){
+                      props.isVisible(true)
+                    }
+                    return;
+                  } else {
+                    props.isVisible(true)
+                  }
+                }} 
+                style={{flex:1, marginLeft:10, paddingBottom:5}}>
+                  <Image style={{width:20, height:20}}
+                  source={require('../../assets/icons/calendar.png')} />      
+                </TouchableOpacity>
+                <View style={{flex:2}}>
+                  <Text>{props.value}</Text>
+                </View>
+            </View>
+            <DateTimePicker
+              minimumDate={props.minDate}
+              disabled={props.editable}
+              isVisible={props.visible ? true:false}
+              onConfirm={(date) => _handlePicker(date)}
+              onCancel={_hideDatePicker}
+              mode="date"
+            />
+          </View>
+        </View>
+      </View>
+  );
+};
+
 const scaleToDimension = (size) => {
   return screenWidth * size / 375
 };
@@ -261,6 +338,7 @@ const styles = StyleSheet.create({
     endRow:{
         flex:2, 
         marginLeft: 10,
+        justifyContent:'center'
     }, 
     field:{
         flex:1,

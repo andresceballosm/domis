@@ -20,6 +20,7 @@ import io.invertase.firebase.firestore.RNFirebaseFirestorePackage;
 import io.invertase.firebase.messaging.RNFirebaseMessagingPackage;
 import io.invertase.firebase.notifications.RNFirebaseNotificationsPackage; 
 import io.invertase.firebase.storage.RNFirebaseStoragePackage;
+import co.apptailor.googlesignin.RNGoogleSigninPackage;  
 
 // import com.airbnb.android.react.maps.MapsPackage;
 
@@ -36,8 +37,6 @@ public class MainApplication extends Application implements ReactApplication {
         protected List<ReactPackage> getPackages() {
           @SuppressWarnings("UnnecessaryLocalVariable")
           List<ReactPackage> packages = new PackageList(this).getPackages();
-          // Packages that cannot be autolinked yet can be added manually here, for example:
-          // packages.add(new MyReactNativePackage());
           packages.add(new RNFirebaseAuthPackage());
           packages.add(new RNFirebaseFirestorePackage());
           packages.add(new RNFirebaseMessagingPackage()); 

@@ -9,14 +9,12 @@ import {
     StyleSheet,
     FlatList,
     Platform,
-    TouchableWithoutFeedback,
-    SafeAreaView } from 'react-native'
+    TouchableWithoutFeedback } from 'react-native'
 import { Header } from 'react-navigation';
 import { Transition} from 'react-navigation-fluid-transitions'
 import { ActionGetCategoriesByStore, ActionGetProductsByCategory, ActionAddToBasket } from '../../../../store/actions/ActionStores';
 import { ActionSetLoading } from '../../../../store/actions/ActionApp';
 import { CardProduct } from '../../../../components/CardProduct';
-import { LoadingSmall } from '../../../../components/LoadingSmall';
 
 let screenWidth = Dimensions.get('window').width;
 
@@ -57,22 +55,17 @@ class StoreScreen extends Component {
     }
 
     render(){
-        const { navigation, categories, dataProducts, loading, basket } = this.props;
+        const { navigation, categories, dataProducts, basket } = this.props;
         const item = navigation.getParam('name', '');
         const color = 'black';
         //const numberStores = this.props.stores !== null ? this.props.stores.stores.length : 0;
         //Set state initial change
+        console.log('categories',categories)
         categories !== null && this.state.selectedTapBarCategory === null ? 
-            this.setState({selectedTapBarCategory:categories[0].id}) : null;
-        const LoadingStatus = () => {
-            if (loading == 'true')
-               return <LoadingSmall />      
-            return null;
-        };
+            this.setState({ selectedTapBarCategory:categories[0].id }) : null;
 
         return (
             <View style={styles.DetailMainContainer}>
-                { LoadingStatus() }
                 <Transition shared={item}>
                     <View style={[styles.detailTopContainer, {backgroundColor:color}]}>
                         <View style={styles.navigationHeaderContainer}>
@@ -248,7 +241,7 @@ const styles = StyleSheet.create({
             shadowOpacity: 1.0
             },
             android: {
-            elevation: 11,
+            elevation: 3,
             }
         })
     },
@@ -300,7 +293,7 @@ const styles = StyleSheet.create({
             shadowOpacity: 0.75
             },
             android: {
-            elevation: 11,
+            elevation: 3,
             }
         }),
         position: 'relative',

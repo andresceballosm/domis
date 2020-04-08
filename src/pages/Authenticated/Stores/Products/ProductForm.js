@@ -7,7 +7,6 @@ import { validate } from './Errors';
 import { Item, Form } from 'native-base';
 
 const ProductForm = (props) => {
-  console.log('props in form==',props);
   return (
     <View behavior="padding" style={styles.body}>
         <Field 
@@ -50,7 +49,7 @@ const ProductForm = (props) => {
         name="unity" 
         label="Unidad"
         //initialValue={ props.initialValues ? props.initialValues.unity : null }
-        data={['Seleccione','kg', 'g', 'L','ml', 'unid','N/A']} 
+        data={['Seleccione','kg', 'g', 'L','ml', 'unid', 'cm3', 'Paquete', 'N/A']} 
         component={fieldSelectPicker}
         />     
          <Field 

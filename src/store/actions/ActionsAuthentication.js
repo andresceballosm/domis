@@ -1,15 +1,23 @@
 import CONSTANTS from '../CONSTANTS';
-import { ActionStopLoading } from './ActionApp';
 
 export const ActionLogin = data => ({
     type: CONSTANTS.LOGIN,
     data
 });
 
+export const ActionLoginWithGoogle = () => ({
+    type: CONSTANTS.LOGIN_WITH_GOOGLE,
+});
+
 export const ActionRegisterUser = data => ({
     type: CONSTANTS.REGISTER_USER,
     data
 });
+
+export const ActionRecoverPassword = (email) => ({
+    type: CONSTANTS.RECOVER_PASSWORD,
+    email
+})
 
 export const ActionSesion = (user) => ({
     type: CONSTANTS.SESION,
@@ -18,6 +26,11 @@ export const ActionSesion = (user) => ({
 
 export const ActionSetSesion = (user) => ({
     type: CONSTANTS.SET_SESION,
+    user
+});
+
+export const ActionSetSesionGoogle = (user) => ({
+    type: CONSTANTS.SET_SESION_GOOGLE,
     user
 });
 

@@ -15,6 +15,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "225916954305-ac69itstckk7vk2ijpen00cvrth1221d.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.camellab.domis",
+            "certificate_hash": "d97886b5619733d0f1f2af83f5a0dbc59f9b8974"
+          }
+        },
+        {
           "client_id": "225916954305-g7f5d8hob0hoq68820gphomgj816556t.apps.googleusercontent.com",
           "client_type": 3
         }

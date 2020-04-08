@@ -3,10 +3,11 @@ import { combineReducers } from 'redux'
 import { ReducerSesion, ReducerTypeUser } from './ReducerSesion'
 import ReducerLoading from './ReducerLoading'
 import { ReducerPosition } from './ReducerPosition'
-import { ReducerStores, ReducerCategories, ReducerProducts, ReducerStore, ReducerUploadImage } from './ReducerStores'
+import { ReducerStores, ReducerCategories, ReducerProducts, ReducerStore, ReducerUploadImage, ReducerCategoriesApp } from './ReducerStores'
 import { ReducerBasket } from './ReducerBasket'
 import { ReducerOrders, ReducerOrderDetails, ReducerUser, ReducerOrdersByDate } from './ReducerOrders'
 import { ReducerAddress } from './ReducerAddress'
+import { ReducerNotifications, ReducerTokenNotifications } from './ReducerNotifications'
 
 export default(reducers = combineReducers({
     form,
@@ -24,5 +25,8 @@ export default(reducers = combineReducers({
     ReducerTypeUser,
     ReducerStore,
     ReducerUploadImage,
-    ReducerOrdersByDate
+    ReducerOrdersByDate,
+    ReducerCategoriesApp,
+    ReducerNotifications,
+    ReducerTokenNotifications
 }));

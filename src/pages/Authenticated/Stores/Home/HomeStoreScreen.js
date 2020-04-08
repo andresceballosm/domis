@@ -19,6 +19,8 @@ import { ActionSetLoading } from '../../../../store/actions/ActionApp.js';
 import { ChartList } from '../../../../components/Charts.js';
 import moment from "moment";
 import { ActionGetOrdersStoreByDate } from '../../../../store/actions/ActionOrder.js';
+import { ActionSetNotifications } from '../../../../store/actions/ActionNotifications.js';
+import { pushNotifications } from '../../../../services/index.js';
 
 let screenWidth = Dimensions.get('window').width;
 let screenHeight = Dimensions.get('window').height;
@@ -51,6 +53,13 @@ class HomeStoreScreen extends Component {
         this.props.getStore(this.props.user.uid);
     }
 
+    componentWillReceiveProps(newProps) {
+        if(newProps.store !== this.props.store){
+            console.log('entraa', newProps.store)
+            this.getOrdersByDate(newProps.store);
+        }
+    }
+
     deleteUser = () => {
         var dataStore = this.props.store.store;
         Object.assign( dataStore, {
@@ -71,7 +80,7 @@ class HomeStoreScreen extends Component {
                     }
                 },
             ],
-            {cancelable: false},
+            { cancelable: false },
         );       
     }
 
@@ -114,13 +123,15 @@ class HomeStoreScreen extends Component {
         }
     };
 
-    getOrdersByDate = () => {
-        this.props.getOrdersByDate(this.props.store.store.store_id, moment().format('l'));
+    getOrdersByDate = (store) => {
+        moment.locale('en');
+        console.log('l', moment().format('l'))
+        this.props.getOrdersByDate(store.store.store_id, moment().format('l'));
         setTimeout(() => { this.updateDataChart() }, 900)
     }
 
     _onRefresh = () => {
-        this.getOrdersByDate();
+        this.getOrdersByDate(this.props.store);
         this.setState({refreshing: false});
     }
     
@@ -216,7 +227,7 @@ class HomeStoreScreen extends Component {
                     </View>
                     <View style={styles.viewChart}>
                         { this.state.dataChart !== null ? 
-                        <ChartList data={ this.state.dataChart } title="Pedidos hoy"/> 
+                        <ChartList data={ this.state.dataChart } title="PEDIDOS HOY"/> 
                         : <View></View>
                         }
                     </View>
@@ -318,7 +329,6 @@ const styles = StyleSheet.create({
 });
 
 const mapStateToProps = state => {
-    console.log('state',state)
     return{
         user : state.ReducerSesion && state.ReducerSesion.user ? state.ReducerSesion.user : false,
         dataUser: state.ReducerUser && state.ReducerUser.user ? state.ReducerUser.user : false,
@@ -344,7 +354,7 @@ const mapDispatchToProps = dispatch => ({
         dispatch(ActionSetLoading());
         dispatch(ActionDisableStore(store))
         //dispatch(ActionDeleteUser())
-    },
+    }
 });
   
 export default connect(mapStateToProps, mapDispatchToProps)(HomeStoreScreen);

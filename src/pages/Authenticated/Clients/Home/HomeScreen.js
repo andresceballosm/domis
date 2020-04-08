@@ -13,15 +13,16 @@ import {
     StyleSheet } from 'react-native'
 import Geolocation from '@react-native-community/geolocation'
 import { Transition} from 'react-navigation-fluid-transitions'
-import { ActionSetPosition, ActionSetLoading } from '../../../../store/actions/ActionApp.js';
+import { ActionSetPosition, ActionSetLoading, ActionGetCategories } from '../../../../store/actions/ActionApp.js';
 import { getGeohashRange } from '../../../../components/GeoHashRange.js';
 import geohash from "ngeohash";
 import { ActionGetUser } from '../../../../store/actions/ActionOrder.js';
+import { LoadingSmall } from '../../../../components/LoadingSmall.js';
 
 
 let screenWidth = Dimensions.get('window').width;
 let screenHeight = Dimensions.get('window').height;
-let arrTapBar = require('../../../../data/categories.json');
+
 const validateIcon = (icon) => {
     switch (icon) {
         case 'cart':
@@ -84,20 +85,19 @@ class HomeScreen extends Component {
     }
     
     componentDidMount(){
-        this.props.getUser(this.props.user.uid)
+        this.props.getUser(this.props.user.uid);
+        this.props.getCategories()
     }
-
-    
 
     componentWillMount(){
         try {
             var permission = requestPositionPermission() //Geolocation.requestAuthorization();
             Geolocation.getCurrentPosition(
                 (position) => {
-                    // const lat = position.coords.latitude;
-                    // const lng = position.coords.longitude
-                    const lat = 4.738025;
-                    const lng = -74.040747;
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude
+                    //const lat = 4.738025;
+                    //const lng = -74.040747;
                     const range = getGeohashRange(lat, lng, 2);
                     const hash = geohash.encode(lat, lng);
                     this.setState({range:range, geohash: hash})
@@ -112,16 +112,24 @@ class HomeScreen extends Component {
 
     getStores = (item) => {
         this.props.navigation.navigate('homeDetails', { 
-            item: item['key'], 
-            color: item['color'], 
-            id: item['id'], 
+            item: item._data['key'], 
+            color: item._data['color'], 
+            id: item._ref._documentPath._parts[1], 
             geohash:this.state.geohash,
             range: this.state.range
         })
     }
 
+    validateCategories = () => {
+        try {
+            return this.props.categories.length > 0 ? true : false;
+        } catch (error) {
+            return false;
+        }
+    }
+
     render() {
-        const { dataUser } = this.props;
+        const { dataUser, categories } = this.props;
         return (
             <SafeAreaView style={styles.mainContainer}>
                 <ScrollView style={styles.mainContainer}>
@@ -151,13 +159,15 @@ class HomeScreen extends Component {
                     </View>
                     <View style={styles.bottomContainer}>
                         <View style={styles.bottomGridContainer}>
+                            { this.validateCategories() && (
                             <FlatList
-                                showsHorizontalScrollIndicator={false}
-                                onPress
-                                horizontal={true}
-                                data={arrTapBar}
-                                renderItem={({item, index}) => this.renderGridItem(item, index)}
-                            />
+                            showsHorizontalScrollIndicator={false}
+                            onPress
+                            horizontal={true}
+                            data={categories}
+                            renderItem={({item, index}) => this.renderGridItem(item, index)}
+                            /> 
+                            )}
                         </View>
                     </View>
                 </ScrollView>
@@ -166,16 +176,18 @@ class HomeScreen extends Component {
     }
 
     renderGridItem(item, index) {
+        if(item._data.available)
         return (
             <TouchableOpacity
+                key={index}
                 activeOpacity = {1}
                 onPress={() => {
                     this.getStores(item)
                 }}>
-                <Transition shared={item['key']}>
-                    <View style={[styles.bottomGridItemContainer,{backgroundColor:item['color']}]}>
+                <Transition shared={item._data['key']}>
+                    <View style={[styles.bottomGridItemContainer,{backgroundColor:item._data['color']}]}>
                         <Image style={styles.categoryImageContainer}
-                            source={validateIcon(item['icon'])}/>
+                            source={ validateIcon(item._data['icon']) }/>
                         <Text style={{
                             marginLeft: 15,
                             marginRight: 10,
@@ -184,7 +196,7 @@ class HomeScreen extends Component {
                             color: 'white',
                             fontWeight: 'bold',
                             fontSize: 35,
-                        }}>{item['key']}</Text>
+                        }}>{item._data['key']}</Text>
                     </View>
                 </Transition>
             </TouchableOpacity>
@@ -256,7 +268,8 @@ const mapStateToProps = state => ({
     user : state.ReducerSesion && state.ReducerSesion.user ? state.ReducerSesion.user : false,
     dataUser: state.ReducerUser && state.ReducerUser.user ? state.ReducerUser.user : false,
     loading: state.ReducerLoading.loading,
-    position: state.ReducerPosition
+    position: state.ReducerPosition,
+    categories : state.ReducerCategoriesApp
 });
 
 const mapDispatchToProps = dispatch => ({
@@ -266,6 +279,10 @@ const mapDispatchToProps = dispatch => ({
     getUser:(uid) => {
         dispatch(ActionSetLoading());
         dispatch(ActionGetUser(uid))
+    },
+    getCategories:() => {
+        dispatch(ActionSetLoading())
+        dispatch(ActionGetCategories())
     }
 });
   

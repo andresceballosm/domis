@@ -19,8 +19,18 @@ export const ReducerStores = ( state = null , action) => {
 export const ReducerStore = ( state = null , action) => {
     switch (action.type) {
         case CONSTANTS.SET_STORE:
-            console.log('action',action)
             return { ...state, store: action.store };
+        case CONSTANTS.LOGOUT:
+            return { ...state, store: null}; 
+        default:
+            return state;
+    }
+}
+
+export const ReducerCategoriesApp = ( state = null , action) => {
+    switch (action.type) {
+        case CONSTANTS.SET_CATEGORIES:
+            return action.categories;
         case CONSTANTS.LOGOUT:
             return { ...state, store: null}; 
         default:

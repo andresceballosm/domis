@@ -13,7 +13,7 @@ export const ChartList = (props) => {
             fontWeight: 'bold',
             }}>{props.title}</Text>
             <BarChart  
-             data={props.data} width={ Dimensions.get("window").width / 1.1} height={220}
+            data={props.data} width={ Dimensions.get("window").width / 1.1} height={220}
             chartConfig={chartConfig} verticalLabelRotation={0} />
         </View>
     )
@@ -26,6 +26,9 @@ const chartConfig = {
     decimalPlaces: 0, // optional, defaults to 2dp
     color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
     labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+    style: {
+        borderRadius: 36
+    },
     //strokeWidth: 2, // optional, default 3
     //barPercentage: 0.5
 };
