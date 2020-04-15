@@ -1,33 +1,24 @@
 import React from 'react';
-import { View } from 'react-native'
 import MapView from 'react-native-maps'
-
-// const getLocation = async () => {
-//     return await new Promise(
-//         (resolve, reject) => {
-//             navigator.geolocation.getCurrentPosition(
-//                 (data) => resolve(data.coords),
-//                 (err) => reject(err)
-//             );
-//         }
-//     );
-// }
 
 export const MapsComponent = (props) => {
     const latitude = props.latitude;
     const longitude = props.longitude;
+    console.log('latitude que llega', longitude);
     const region = {
       latitude,
       longitude,
-      latitudeDelta: 0.005,
-      longitudeDelta: 0.005
+      latitudeDelta: 0.0009,
+      longitudeDelta: 0.0009
     }
     return (
         <MapView
-          style = {{ flex:1 }}
+          style = {[{flex:1}, props.width && { width: props.width, height:props.height }]}
           region={region}
         >
           <MapView.Marker
+            draggable={props.draggable}
+            onDragEnd={(e) => props.newCoordinates(e.nativeEvent.coordinate)}
             title={props.storeName}
             coordinate={region} />
         </MapView>  

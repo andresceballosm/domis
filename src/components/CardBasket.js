@@ -17,7 +17,7 @@ export const CardBasket = (props) => {
             <View style={styles.data}>
                 <Text style={styles.title}> {props.item.name} </Text>
                 <Text style={styles.subtitle}> {props.item.brand} / { props.item.quantity }  {props.item.unity} </Text>
-                <Text style={styles.title}>${props.item.price} </Text>
+                <Text style={styles.title}>${props.item.price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} </Text>
             </View>
             <View style={styles.viewIcons}>
                 <TouchableOpacity 

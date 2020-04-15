@@ -12,18 +12,20 @@ import {
     Modal,
     RefreshControl,
     StyleSheet } from 'react-native'
-import { ActionGetStore, ActionDisableStore } from '../../../../store/actions/ActionStores.js';
+import { ActionGetStore, ActionDisableStore, ActionUpdateStore } from '../../../../store/actions/ActionStores.js';
 import { ButtonGeneral } from '../../../../components/ButtonRegister.js';
 import { ActionLogout } from '../../../../store/actions/ActionsAuthentication.js';
 import { ActionSetLoading } from '../../../../store/actions/ActionApp.js';
 import { ChartList } from '../../../../components/Charts.js';
 import moment from "moment";
 import { ActionGetOrdersStoreByDate } from '../../../../store/actions/ActionOrder.js';
-import { ActionSetNotifications } from '../../../../store/actions/ActionNotifications.js';
-import { pushNotifications } from '../../../../services/index.js';
+import { FieldSelectPerimeter } from '../../../../components/Fields.js';
 
 let screenWidth = Dimensions.get('window').width;
 let screenHeight = Dimensions.get('window').height;
+let dataSelect = [ 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1100,1200, 1300, 1400, 1500,
+1600, 1700, 1800 ,1900, 2000, 2100, 2200, 2300, 2400, 2500, 2600, 2700, 2800, 2900, 3000,
+3100, 3200, 3300, 3400, 3500, 3600, 3700, 3800, 3900, 4000]
 
 class HomeStoreScreen extends Component {
     static navigationOptions = {
@@ -39,6 +41,8 @@ class HomeStoreScreen extends Component {
         },
     };
 
+ 
+
     constructor(props) {
         super(props);
         this.state = {
@@ -46,6 +50,7 @@ class HomeStoreScreen extends Component {
             visibleSettings: false,
             dataChart: null,
             refreshing: false,
+            perimeter: 0
         };
     }
     
@@ -55,7 +60,6 @@ class HomeStoreScreen extends Component {
 
     componentWillReceiveProps(newProps) {
         if(newProps.store !== this.props.store){
-            console.log('entraa', newProps.store)
             this.getOrdersByDate(newProps.store);
         }
     }
@@ -133,6 +137,30 @@ class HomeStoreScreen extends Component {
     _onRefresh = () => {
         this.getOrdersByDate(this.props.store);
         this.setState({refreshing: false});
+    };
+
+    savePerimeter = () => {
+        console.log('this.state.perimeter',this.state.perimeter)
+        const perimeter = ((parseInt(this.state.perimeter) / 1609) / 2).toString();
+        const store = this.props.store.store;
+        store.perimeter = perimeter;
+
+        Alert.alert(
+            'Cambio de perimetro',
+            'Esta seguro(a) que desea guardar la información.',
+            [
+                {
+                    text: 'Cancelar',
+                    onPress: () => console.log('Cancel Pressed'),
+                    style: 'cancel',
+                },
+                {   text: 'Aceptar', onPress: () => { 
+                    this.props.editStore(store);
+                    this.setState({visibleSettings:false})
+                }},
+            ],
+            { cancelable: false},
+        );    
     }
     
     render() {
@@ -172,7 +200,10 @@ class HomeStoreScreen extends Component {
                             </View>
                             <View  style={[styles.headerItem, { alignItems:'flex-end', marginRight:10}]}>
                                 <TouchableOpacity
-                                onPress={()=> this.setState({ visibleSettings : true })}> 
+                                onPress={()=> {
+                                    let perimeter = (parseFloat(this.props.store.store.perimeter) * 1609) * 2;
+                                    this.setState({ visibleSettings : true, perimeter }
+                                )}}> 
                                     <Image 
                                     style={styles.userImageContainer1}
                                         source={require('../../../../../assets/icons/settings.png')}/>
@@ -187,24 +218,56 @@ class HomeStoreScreen extends Component {
                                         onPress={()=> this.setState({ visibleSettings : false })}> 
                                             <Image 
                                             style={styles.userImageContainer1}
-                                            source={require('../../../../../assets/icons/down.png')}/>
+                                            source={require('../../../../../assets/icons/down-black.png')}/>
                                         </TouchableOpacity>
                                         <View style={styles.bodyModal}>
-                                            <View  style={[styles.bottomGridContainer, { marginTop: 50}]}>
-                                                <ButtonGeneral 
-                                                title="Cerrar sesion" 
-                                                click={() => this.props.closeSesion()}
-                                                color="#9c272c"
-                                                fontColor="white"
-                                                />
+                                            <View style={{flex:2, alignItems:'center'}}>
+                                                <View style={{ 
+                                                    flexDirection:'row', 
+                                                    alignItems:'center', 
+                                                    justifyContent:'center', 
+                                                    paddingHorizontal:40, 
+                                                    marginBottom:10, 
+                                                }}>
+                                                    <View style={{
+                                                        flex:1, 
+                                                        alignItems:'flex-end',
+                                                    }}>
+                                                        <Text style={{fontFamily:'Ubuntu-Bold'}}>Cobertura de entrega :</Text>
+                                                    </View>
+                                                    <View style={{flex:1, alignItems:'flex-start' }}>
+                                                        <FieldSelectPerimeter 
+                                                        data={ dataSelect }
+                                                        change={(value) => this.setState({perimeter : value})}
+                                                        initialValue={this.state.perimeter}/>
+                                                    </View>
+                                                </View>
+                                                <Text style={{fontSize:10, marginHorizontal:10, color:'#9c272c '}}>*Distancia maxima en metros a la cual llevas domicilios.</Text>
+                                                <View style={{flex:1, marginTop: 40}}>
+                                                    <ButtonGeneral 
+                                                    title="Guardar" 
+                                                    click={() => this.savePerimeter()}
+                                                    color="black"
+                                                    fontColor="white"/>
+                                                </View>
                                             </View>
-                                            <View style={[styles.bottomGridContainer, {  }]}>
-                                                <ButtonGeneral 
-                                                title="Eliminar cuenta" 
-                                                click={() => this.deleteUser()}
-                                                color="white"
-                                                fontColor="#9c272c"
-                                                />
+                                            <View style={{flex:1}}>
+                                                <View  style={[styles.bottomGridContainer]}>
+                                                    <ButtonGeneral 
+                                                    title="Cerrar sesión" 
+                                                    click={() => this.props.closeSesion()}
+                                                    color="#9c272c"
+                                                    fontColor="white"
+                                                    />
+                                                </View>
+                                                <View style={[styles.bottomGridContainer]}>
+                                                    <ButtonGeneral 
+                                                    title="Eliminar cuenta" 
+                                                    click={() => this.deleteUser()}
+                                                    color="white"
+                                                    fontColor="#9c272c"
+                                                    />
+                                                </View>
                                             </View>
                                         </View>
                                     </View>
@@ -289,8 +352,6 @@ const styles = StyleSheet.create({
     bottomGridContainer: {
         alignItems:'center',
         width: screenWidth,
-        marginBottom:30,
-        //height: screenHeight / 2 - 50,
         backgroundColor: 'transparent',
         flexDirection: 'column',
         justifyContent: 'center'
@@ -319,7 +380,7 @@ const styles = StyleSheet.create({
         flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: 'rgba(52, 52, 52, 0.9)',
+        backgroundColor: 'white',
         height:200
     },
     bodyModal:{
@@ -354,7 +415,11 @@ const mapDispatchToProps = dispatch => ({
         dispatch(ActionSetLoading());
         dispatch(ActionDisableStore(store))
         //dispatch(ActionDeleteUser())
-    }
+    },
+    editStore: ( store ) => {
+        dispatch(ActionSetLoading());
+        dispatch(ActionUpdateStore(store));
+    },
 });
   
 export default connect(mapStateToProps, mapDispatchToProps)(HomeStoreScreen);

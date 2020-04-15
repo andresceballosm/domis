@@ -12,12 +12,15 @@ import {
     PermissionsAndroid,
     StyleSheet } from 'react-native'
 import Geolocation from '@react-native-community/geolocation'
+import { change } from 'redux-form';
+import Geocoder from 'react-native-geocoding';
 import { Transition} from 'react-navigation-fluid-transitions'
 import { ActionSetPosition, ActionSetLoading, ActionGetCategories } from '../../../../store/actions/ActionApp.js';
 import { getGeohashRange } from '../../../../components/GeoHashRange.js';
 import geohash from "ngeohash";
-import { ActionGetUser } from '../../../../store/actions/ActionOrder.js';
+import { ActionGetUser, ActionUpdateUser } from '../../../../store/actions/ActionOrder.js';
 import { LoadingSmall } from '../../../../components/LoadingSmall.js';
+import Address from '../../../../components/Address.js';
 
 
 let screenWidth = Dimensions.get('window').width;
@@ -80,7 +83,11 @@ class HomeScreen extends Component {
         this.state = {
             selectedTapBarIndex: 0,
             geohash:'',
-            range: ''
+            range: '',
+            visibleAddress: false,
+            lat : '',
+            lng : '',
+            addressLocation : ''
         };
     }
     
@@ -91,15 +98,15 @@ class HomeScreen extends Component {
 
     componentWillMount(){
         try {
-            var permission = requestPositionPermission() //Geolocation.requestAuthorization();
+            requestPositionPermission() //Geolocation.requestAuthorization();
             Geolocation.getCurrentPosition(
                 (position) => {
                     const lat = position.coords.latitude;
                     const lng = position.coords.longitude
-                    //const lat = 4.738025;
-                    //const lng = -74.040747;
-                    const range = getGeohashRange(lat, lng, 2);
+                    this.setState({lat , lng})
+                    const range = getGeohashRange(lat, lng, 3);
                     const hash = geohash.encode(lat, lng);
+                    console.log('hash',hash)
                     this.setState({range:range, geohash: hash})
                     this.props.setPosition(position.coords)
                 }
@@ -128,6 +135,57 @@ class HomeScreen extends Component {
         }
     }
 
+    addAddress = (address,phone,detail) => {
+        const idUser = this.props.user.uid;
+        const geohash = this.state.geohash;
+        const newAddress = { address, phone, detail, geohash };
+        var adressNow = this.props.dataUser.address;
+        console.log('adressNow',adressNow);
+        if(adressNow === undefined){
+            this.props.dataUser.address = [];
+            this.props.dataUser.address.push(newAddress);
+        } else {
+            adressNow.push(newAddress);
+        }
+        const user  = this.props.dataUser;
+        this.setState({ visibleAddress:false })
+        this.props.updateUser({user, idUser });
+    };
+
+    updateAddressPosition = ( address ) => {
+        const idUser = this.props.user.uid
+        this.setState({ visibleAddress:false })
+        this.props.dataUser.address = address;
+        const user  = this.props.dataUser;
+        this.props.updateUser({user, idUser });
+    }
+
+    getAddress = (lat,lng) => { 
+        Geocoder.init("AIzaSyACPfd5eBKP1GI1XDrLMB_Sm_eGD_VRC7Y", {language : "es"});
+        Geocoder.from(lat,lng)
+        .then(json => {
+            console.log('json', json);
+        		var addressComponent = json.results[0].address_components[1].long_name + ' # ' + json.results[0].address_components[0].long_name;
+                this.setState({addressLocation : addressComponent})
+                console.log('addressComponent',addressComponent);
+        })
+        .catch(error => console.warn(error));
+    }
+
+    showModalAddress = () => {
+        const { lat, lng } = this.state;
+        this.getAddress(lat, lng)
+        this.setState({visibleAddress : !this.state.visibleAddress})
+    }
+
+    validateAddress = () => {
+        try {
+            return this.props.dataUser.address.length > 0 ? true : false;   
+        } catch (error) {
+            return false;
+        }
+    }
+
     render() {
         const { dataUser, categories } = this.props;
         return (
@@ -135,16 +193,36 @@ class HomeScreen extends Component {
                 <ScrollView style={styles.mainContainer}>
                     <View style={styles.topContainer}>
                     <View style={{ flexDirection: 'row', alignItems:'center', justifyContent:'center'}}>
-                    <View style={{flex:1, marginLeft:15}}>
-                        <Text style={{ marginTop: 8, color: '#58647a'}}>
-                            Hola!{"\n"}{dataUser ? dataUser.firstname : 'usuario' }
-                        </Text>
-                    </View>
-                    <View style={{ flex:3, flexDirection:'row', alignItems:'center'}}>
-                        <Image style={styles.userImageContainer}
-                        source={require('../../../../../assets/icons/logo-100.png')}/>
-                        <Text style={{fontSize:30, fontFamily:'HermanoAlto Round', paddingTop:12}}>DOMIS</Text>
-                    </View>
+                        <View style={{ flex:1, flexDirection:'row', alignItems:'center'}}>
+                            <Image style={styles.userImageContainer}
+                            source={require('../../../../../assets/icons/logo-100.png')}/>
+                            <Text style={{fontSize:30, fontFamily:'HermanoAlto Round', paddingTop:12}}>DOMIS</Text>
+                        </View>
+                        <View style={{flex:2, marginLeft:15, alignItems:'flex-end', margin:10}}>       
+                            <Text style={{ marginTop: 8, color: '#58647a', fontSize:16}}>
+                                Hola!
+                            </Text> 
+                            <Text style={{color:'#78b3a3', fontSize:16}}>{dataUser ? dataUser.firstname : 'usuario' }</Text>        
+                            <TouchableOpacity 
+                            style={styles.touchableAddress}
+                            onPress={() => this.showModalAddress()}>
+                                { this.validateAddress() ?
+                                    <Text  style={styles.textTouchableAddress}>{this.props.dataUser.address[0].address}</Text> 
+                                    :
+                                    <Text style={styles.textTouchableAddress}>Agregar dirección</Text> 
+                                }  
+                                <Image style={styles.edit}
+                                source={require('../../../../../assets/icons/downselect.png')}/>  
+                            </TouchableOpacity>         
+                        </View>
+                        <Address 
+                        form={ this.props.form }
+                        dataUser={this.props.dataUser}
+                        addressLocation={this.state.addressLocation}
+                        addAddress={(address,phone,detail) => this.addAddress(address,phone,detail)} 
+                        updateAddressPosition={(address) => this.updateAddressPosition(address)}
+                        close={() => this.setState({ visibleAddress:false })}
+                        visibleAddress={this.state.visibleAddress} /> 
                     </View>
                         <Text style={{
                             marginLeft: 15,
@@ -218,6 +296,11 @@ const styles = StyleSheet.create({
         // height: screenHeight/2,
         backgroundColor: 'transparent'
     },
+    edit:{
+        height:20,
+        width:20,
+        marginLeft:5
+    },
     userImageContainer: {
         marginLeft: 15,
         marginTop: 5,
@@ -261,6 +344,16 @@ const styles = StyleSheet.create({
         flexDirection: 'column',
         justifyContent: 'center',
         borderRadius: 15
+    },
+    touchableAddress: {
+        marginTop:5,
+        flexDirection:'row',
+        alignItems:'center',
+    },
+    textTouchableAddress:{
+        color: '#58647a',
+        fontSize:12, 
+        marginLeft:5
     }
 });
 
@@ -269,7 +362,8 @@ const mapStateToProps = state => ({
     dataUser: state.ReducerUser && state.ReducerUser.user ? state.ReducerUser.user : false,
     loading: state.ReducerLoading.loading,
     position: state.ReducerPosition,
-    categories : state.ReducerCategoriesApp
+    categories : state.ReducerCategoriesApp,
+    form: state.form.DeliveryForm,
 });
 
 const mapDispatchToProps = dispatch => ({
@@ -283,7 +377,12 @@ const mapDispatchToProps = dispatch => ({
     getCategories:() => {
         dispatch(ActionSetLoading())
         dispatch(ActionGetCategories())
-    }
+    },
+    updateUser:(user) => {
+        dispatch(ActionSetLoading());
+        dispatch(ActionUpdateUser(user))
+    },
+    dispatchChange: (formName, field, value) => dispatch(change(formName, field, value)),
 });
   
 export default connect(mapStateToProps, mapDispatchToProps)(HomeScreen);

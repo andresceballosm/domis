@@ -48,17 +48,23 @@ const ProductForm = (props) => {
         <Field 
         name="unity" 
         label="Unidad"
-        //initialValue={ props.initialValues ? props.initialValues.unity : null }
         data={['Seleccione','kg', 'g', 'L','ml', 'unid', 'cm3', 'Paquete', 'N/A']} 
         component={fieldSelectPicker}
         />     
-         <Field 
+        <Field 
         name="quantity" 
         label="Cantidad" 
         ph="200"
         keyboardType={'decimal-pad'}
         component={fieldInputFloat}
-        />    
+        />
+        {/* <Field 
+        name="order" 
+        label="Orden" 
+        ph="1"
+        keyboardType={'decimal-pad'}
+        component={fieldInputFloat}
+        />       */}
         <View style={styles.button}>
             <ButtonRegister 
             title="Guardar" 

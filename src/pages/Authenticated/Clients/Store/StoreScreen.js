@@ -13,10 +13,10 @@ import {
     TouchableWithoutFeedback } from 'react-native'
 import { Header } from 'react-navigation';
 import { Transition} from 'react-navigation-fluid-transitions'
-import { ActionGetProductsByCategory, ActionAddToBasket } from '../../../../store/actions/ActionStores';
+import { ActionGetProductsByCategory, ActionAddToBasket, ActionGetProductsByKeyword } from '../../../../store/actions/ActionStores';
 import { ActionSetLoading } from '../../../../store/actions/ActionApp';
-import { CardProduct } from '../../../../components/CardProduct';
-import { ButtonBackDown } from '../../../../components/ButtonRegister';
+import { CardProduct, CardProductHorizontal } from '../../../../components/CardProduct';
+import { ButtonBackDown, ButtonGeneral } from '../../../../components/ButtonRegister';
 import { showAlertError } from '../../../../utils/Alerts';
 
 let screenWidth = Dimensions.get('window').width;
@@ -45,7 +45,8 @@ class StoreScreen extends Component {
             categories: null,
             products:'',
             searchText:'',
-            filter: false
+            filter: false,
+            msgsearch: ''
         };
     }
     componentDidMount(){
@@ -85,43 +86,91 @@ class StoreScreen extends Component {
         return (
             <View style={styles.DetailMainContainer}>
                 <Transition shared={item}>
-                    <View style={[styles.detailTopContainer, {backgroundColor:color}]}>
-                        <View style={styles.navigationHeaderContainer}>
-                            <ButtonBackDown 
-                            navigation = { this.props.navigation}
-                            imageStyle = {{ width:scaleToDimension(40), height:scaleToDimension(40) }}
-                            />
-                        </View>
+                    <View style={[styles.detailTopContainer, { backgroundColor:color }]}>
                         <View style={styles.detailTopBottomSubContainer}>
-                            <Image style={styles.categoryImageContainer}
-                                source={validateIcon(item['icon'])}/>
+                            <Image source={validateIcon(item['icon'])}/>
                             <Text style={{
                                 color: 'white',
                                 fontWeight: 'bold',
-                                fontSize: scaleToDimension(30),
+                                fontSize: scaleToDimension(20),
                             }}>{item}</Text>
                             {/* <Text style={{color: 'white', fontSize: scaleToDimension(15),}}>{numberStores} negocios en tu zona</Text> */}
                         </View>
+                        <View style={styles.navigationHeaderContainer}>
+                            <ButtonBackDown 
+                            navigation = { this.props.navigation}
+                            imageStyle = {{ width:scaleToDimension(35), height:scaleToDimension(35) }}
+                            />
+                        </View>
                     </View>
                 </Transition>
+                <View style={{flex:1, flexDirection:'row', alignItems:'center', justifyContent:'center'}}>
+                    <View style={{ flex:2, marginTop:10, marginLeft:10,marginRight:10, justifyContent:'center', height:45 }}>
+                        <TextInput
+                        paddingLeft={12}
+                        style={styles.searchBar}
+                        value={this.state.searchText}
+                        onChangeText={ (value) => this.setState({ searchText:value})}
+                        placeholder='Producto' />
+                    </View>
+                    <View style={{flex:1, marginLeft:10, justifyContent:'center'}}>
+                        <ButtonGeneral   
+                        title="Buscar" 
+                        width={100}
+                        height={30}
+                        click={() => this.searchText()}
+                        color="black"
+                        fontColor="white"/>
+                    </View>
+                </View>
+                { this.state.searchText !== '' && (
+                    <TouchableOpacity onPress={() => this.setState({ searchText: '', msgsearch: ''})}>
+                        <Text style={{marginLeft:12, color:'red', textDecorationColor:'red'}}>Limpiar filtro</Text>
+                    </TouchableOpacity>
+                )}
                 {  categories !== null ?
-                <View style={{flex:1,backgroundColor:'#ffffff', height: scaleToDimension(50)}}>
-                    <FlatList
-                        showsHorizontalScrollIndicator={false}
-                        horizontal={true}
-                        data={categories}
-                        extraData={this.state.selectedTapBarIndex }
-                        renderItem={({item, index}) => this.renderTapBarItem(item, index)}
-                    />
-                    <View style={{flex:8}}>
-                        { dataProducts !== null ?
-                            this.renderProducts()
-                        : 
+                <View style={{flex:5}}>
+                    { this.state.searchText === '' ?
+                    <View style={{flex:1}}>
+                        <View style={{flex:1}}>
+                            <FlatList
+                            showsHorizontalScrollIndicator={false}
+                            horizontal={true}
+                            data={categories}
+                            extraData={this.state.selectedTapBarIndex }
+                            renderItem={({item, index}) => this.renderTapBarItem(item, index)} />
+                        </View>
+                        <View style={{flex:8}}>
+                            { dataProducts !== null ?
+                                this.renderProducts()
+                            : 
+                                <View style={{alignItems:'center', justifyContent:'center',marginTop:20}}>
+                                    <Text>No hay productos para esta categoria.</Text>
+                                </View>
+                            }
+                        </View>
+                    </View>
+                    : 
+                    <View style={{flex:1}}>                   
+                        { dataProducts.filter.length > 0 ?
+                            <View style={{flex:1}}>
+                                <FlatList
+                                data={ dataProducts.filter }
+                                extraData={ dataProducts.filter }
+                                renderItem={({item, index}) => {
+                                    return <CardProductHorizontal 
+                                    click={(product) => { this.addBasket(product)}} 
+                                    item={item} 
+                                    key={index}/>
+                                }} /> 
+                            </View>
+                            :
                             <View style={{alignItems:'center', justifyContent:'center',marginTop:20}}>
-                                <Text>No hay productos para esta categoria.</Text>
+                                <Text>{ this.state.msgsearch }</Text>
                             </View>
                         }
                     </View>
+                    }
                 </View> 
                 : 
                 <View style={{flex:2,alignItems:'center', justifyContent:'center', marginLeft:10, marginTop:50}}>
@@ -131,7 +180,7 @@ class StoreScreen extends Component {
                 <Transition shared={'basket'}>
                     <View style={[styles.detailBottomContainer, {backgroundColor:color}]}>
                         <View style={{flex:1,alignItems:'flex-start', justifyContent:'center'}}>
-                            <Text style={styles.total}>Total: ${ basket.total }</Text>
+                            <Text style={styles.total}>Total: ${ basket.total.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") }</Text>
                         </View>
                         <TouchableOpacity style={styles.buttonBasket} onPress={() => { 
                              this.props.navigation.navigate('basket', {
@@ -149,26 +198,30 @@ class StoreScreen extends Component {
         );
     }
 
-    searchText = (e) => {
-        this.setState({ searchText:e , filter : true})
-        const data = this.props.dataProducts.products;
-        let text = e.toLowerCase()
-        // let products = this.state.products
-        let filteredName = products.filter((item) => item._data.name.toLowerCase().match(text) || item._data.brand.toLowerCase().match(text))
-        if (!text || text === '') {
-            products = products = data.filter(product => product._data.category_id === this.state.selectedTapBarCategory);
-        } else if (!Array.isArray(filteredName) && !filteredName.length) {
-            showAlertError('No se encontro ningun producto con este nombre');
-            products = products = data.filter(product => product._data.category_id === this.state.selectedTapBarCategory);
-        } else if (Array.isArray(filteredName)) {
-            if(filteredName.length > 0){
-                products = filteredName;
-            } else {
-                this.setState({ searchText:'' })
-                showAlertError('No se encontro ningun producto con este nombre');
-                products = products = data.filter(product => product._data.category_id === this.state.selectedTapBarCategory);
-            }   
-        }
+    searchText = () => {
+        let word = this.state.searchText.toLowerCase();
+        const store_id = this.props.navigation.getParam('id', '');
+        this.props.getProductsFilter(store_id, word)
+        this.setState({ msgsearch : 'No encontramos resultados para su busqueda.'})
+        // this.setState({ searchText:e , filter : true})
+        // const data = this.props.dataProducts.products;
+        // let text = e.toLowerCase()
+        // // let products = this.state.products
+        // let filteredName = products.filter((item) => item._data.name.toLowerCase().match(text) || item._data.brand.toLowerCase().match(text))
+        // if (!text || text === '') {
+        //     products = products = data.filter(product => product._data.category_id === this.state.selectedTapBarCategory);
+        // } else if (!Array.isArray(filteredName) && !filteredName.length) {
+        //     showAlertError('No se encontro ningun producto con este nombre');
+        //     products = products = data.filter(product => product._data.category_id === this.state.selectedTapBarCategory);
+        // } else if (Array.isArray(filteredName)) {
+        //     if(filteredName.length > 0){
+        //         products = filteredName;
+        //     } else {
+        //         this.setState({ searchText:'' })
+        //         showAlertError('No se encontro ningun producto con este nombre');
+        //         products = products = data.filter(product => product._data.category_id === this.state.selectedTapBarCategory);
+        //     }   
+        // }
     }
 
     renderProducts() {
@@ -177,15 +230,7 @@ class StoreScreen extends Component {
             products = data.filter(product => product._data.category_id === this.state.selectedTapBarCategory && product._data.active);
         } 
 
-        return <View style={{marginBottom:30}}> 
-            <View style={{height:45, width:'90%', marginLeft:10}}>
-                <TextInput
-                paddingLeft={12}
-                style={styles.searchBar}
-                value={this.state.searchText}
-                onChangeText={value => this.searchText(value)}
-                placeholder='Buscar producto' />
-            </View>
+        return <View style={{marginBottom:10}}> 
             { products.length > 0 ?
             <FlatList
             showsHorizontalScrollIndicator={false}
@@ -204,7 +249,7 @@ class StoreScreen extends Component {
 
     renderCardProduct(item, index) {
         if(item._data.category_id === this.state.selectedTapBarCategory)
-            return <CardProduct click={(product) => { this.addBasket(product)}} item={item} index = {index}/>
+            return <CardProduct click={(product) => { this.addBasket(product)}} item={item} key={index}/>
         else {
             return (
                 <View style={{alignItems:'center', justifyContent:'center',marginTop:20}}>
@@ -221,7 +266,7 @@ class StoreScreen extends Component {
                     this.setState({ selectedTapBarIndex: index, selectedTapBarCategory: item.id, filter : false, searchText : '' });
                     this.getProductsByCategory(item.id)
                 }}>
-                <View style={{justifyContent: 'center', flex: 1, marginTop:10}}>
+                <View style={{justifyContent: 'center', flex: 1}}>
                     <Text style={
                         {
                             marginLeft: 10,
@@ -256,23 +301,22 @@ const styles = StyleSheet.create({
     categoryImageContainer: {
         marginLeft: 15,
         marginTop: 5,
-        height: 50,
-        width: 50,
+
     },
     navigationHeaderContainer: {
-        height: Header.HEIGHT,
-        width: screenWidth,
+        flex:1,
         color: "blue",
         justifyContent: 'center',
-        alignItems:'center',
-        marginTop:15
+        alignItems:'flex-end',
+        padding:10
     },
     DetailMainContainer: {
         flex: 1,
         backgroundColor:'#ffffff'
     },
     detailTopContainer: {
-        height: scaleToDimension(150),
+        flex:1.5,
+        flexDirection:'row',
         width: screenWidth,
         borderBottomLeftRadius: 20,
         borderBottomRightRadius:20,
@@ -300,20 +344,10 @@ const styles = StyleSheet.create({
         })
     },
     detailTopBottomSubContainer: {
-        height: Header.HEIGHT,
-        width: screenWidth,
+        flex:3,
+        padding:10,
         justifyContent: 'center',
         alignItems:'center',
-        marginBottom:15
-        // width: screenWidth - 30,
-        // height: screenWidth/5,
-        // marginBottom:15,
-
-        // backgroundColor: 'red',
-        // position: 'absolute',
-        // bottom: 15,
-        // left: 15,
-        // right: 15,
     },
     detailListCellContainer: {
         width: screenWidth,
@@ -427,9 +461,14 @@ const mapStateToProps = state => ({
 });
   
 const mapDispatchToProps = dispatch => ({
-    getProducts: (idCategory, store_id ) => {
+    getProducts: (id, store_id ) => {
         dispatch(ActionSetLoading());
-        dispatch(ActionGetProductsByCategory(idCategory, store_id))
+        let data = { id, store_id }
+        dispatch(ActionGetProductsByCategory(data))
+    },
+    getProductsFilter: (store_id, word) => {
+        dispatch(ActionSetLoading());
+        dispatch(ActionGetProductsByKeyword(store_id, word))
     },
     setPosition:(position) => {
         dispatch(ActionSetPosition(position))

@@ -1,21 +1,9 @@
 import React, { Component } from 'react';
 import { KeyboardAvoidingView, ScrollView, View, Dimensions } from 'react-native';
 import { Field, reduxForm } from 'redux-form';
-import { fieldInputOrder, fieldInputNumber } from '../../../../components/Fields';
+import { fieldInputOrder, fieldInputNumber, FieldInputOrder, FieldInputNumber } from '../../../../components/Fields';
 import { ButtonRegister } from '../../../../components/ButtonRegister';
 
-const validate = (values) => {
-    const errors = {};
-  
-    if (!values.address) {
-        errors.address = '*';
-    }
-    if (!values.phone) {
-        errors.phone = '*';
-    }
-    
-    return errors;
-};
 
 let screenWidth = Dimensions.get('window').width;
 
@@ -25,9 +13,11 @@ const scaleToDimension = (size) => {
 
 class DeliveryForm extends Component {
     state={
-        loadData: false
+        loadData: false,
+        address : ''
     }
     render(){
+        console.log('this.props.validate', this.props.validate)
         if(this.props.data !== null && this.state.loadData === false && this.props.data !== undefined) {
             if(this.props.data !== null) {
                 this.setState({loadData:true})
@@ -48,44 +38,50 @@ class DeliveryForm extends Component {
 
         return (
             <KeyboardAvoidingView>
-                <ScrollView style={{height:scaleToDimension(140)}}>
-                    <Field 
-                    name="address" 
-                    editable={this.props.editable}
+                <View style={{height:scaleToDimension(140)}}>
+                    <FieldInputOrder 
                     label="Dirección" 
-                    placeholder='Kr 19 # 155-22 Edificio Prueba apto 402'
-                    component={fieldInputOrder}
+                    placeholder='Kr 19 # 155-22'
+                    value={this.props.address}
+                    onChange = {(address) => this.props.setAddress(address)}
                     />
-                    <Field 
-                    name="phone" 
-                    editable={this.props.editable}
+                    <View style={{height:10}} />
+                    { this.props.showDetail && (
+                    <FieldInputOrder 
+                    label="Detalle" 
+                    placeholder='Agregar apto, bloque, piso, casa'
+                    value={this.props.detail}
+                    onChange = {(detail) => this.props.setDetail(detail)}
+                    />
+                    )}
+                    <View style={{height:10}} />
+                    { this.props.showPhone && (
+                    <FieldInputNumber 
+                    value={this.props.phone}
+                    onChange = {(phone) => this.props.setPhone(phone)}
                     label="Teléfono" 
                     keyboardType = "phone-pad"
                     placeholder="Teléfono para contactarlo si es necesario"
-                    component={fieldInputNumber}
                     />
-                </ScrollView>
-                { this.props.editable ?
+                    )}
+                </View>
+
                 <View style={{ 
                     height: scaleToDimension(70),
                     alignItems:'center',
                     justifyContent:'center',
-                    paddingBottom:15
+                    marginTop:10
                 }}>
                     <ButtonRegister 
                     title={this.props.buttonName} 
                     click={  this.props.addOrder }                           
-                    invalid={ this.props.invalid } 
+                    invalid={ !this.props.validate } 
                     color="black"
                     />
-                </View> : <View></View>
-                }
+                </View>
             </KeyboardAvoidingView>
         )
     }
 }
 
-export default reduxForm({
-    form: 'DeliveryForm',
-    validate,
-  })(DeliveryForm);
+export default DeliveryForm

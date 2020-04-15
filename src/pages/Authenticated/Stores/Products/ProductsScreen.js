@@ -7,9 +7,9 @@ import {
     Image, 
     Alert,
     SafeAreaView,
+    ActivityIndicator,
     Dimensions,
     Modal,
-    ScrollView,
     TextInput,
     FlatList,
     TouchableWithoutFeedback,
@@ -17,7 +17,7 @@ import {
 import { Transition} from 'react-navigation-fluid-transitions'
 import { Header } from 'react-navigation';
 import { ActionSetLoading } from '../../../../store/actions/ActionApp.js';
-import { ActionGetProductsByCategory, ActionUpdateProduct, ActionUpdateStore } from '../../../../store/actions/ActionStores.js';
+import { ActionGetProductsByCategory, ActionUpdateProduct, ActionUpdateStore, ActionGetProductsByKeyword } from '../../../../store/actions/ActionStores.js';
 import { CardProductStore } from '../../../../components/CardProduct.js';
 import DropDown from '../../../../components/DropDown.js';
 import { Form, Item, Input, Label } from 'native-base';
@@ -30,6 +30,7 @@ let screenHeight = Dimensions.get('window').height;
 
 class ProductsScreen extends Component {
     // static router = Navigator.router;
+    flatlist = React.createRef();
     static navigationOptions = {
         title: 'Profile',
         headerTintColor: '#ffffff',
@@ -51,59 +52,82 @@ class ProductsScreen extends Component {
             selectedTapBarCategory: null,
             categories: null,
             products: null,
+            productsFilter: null,
             searchText:'' ,
             filter: true,
             showFormCategory: false,
             category: '',
-            categorySelected: ''
+            categorySelected: '',
+            lastVisible: [],
+            lastVisibleNow : 0,
+            limit: 10,
+            scrollPosition: 0,
+            msgsearch: ''
         };
     }
 
-    getProductsByCategory = (id) => {
+    getProductsByCategory = (id, lastVisible, refresh) => {
+        const {  limit } = this.state;
         const categories = this.props.store.store.categories;
         this.setState({ categories : categories })
         const store_id = this.props.store.store.store_id;
         const data = this.props.dataProducts.products;
-        if(data !== null ){
-            const categoryExist = data.filter(category => category._data.category_id === id);
-            categoryExist.length === 0 ? this.props.getProducts(id, store_id) : null;
+        if(!refresh){
+            if(data !== null ){
+                const categoryExist = data.filter(category => category._data.category_id === id);
+                categoryExist.length === 0 ? this.props.getProducts({id, store_id,lastVisible, limit}) : null;
+            } else {
+                this.props.getProducts({id, store_id})
+            }  
         } else {
-            this.props.getProducts(id, store_id)
-        }       
+            this.props.getProducts({id, store_id})
+        }     
     }
 
     componentDidMount(){
         const categories = this.props.store.store.categories;
         if(categories){
-            this.getProductsByCategory(categories[0].id)
+            this.getProductsByCategory(categories[0].id, 0, false)
         }
+
+        // this.props.navigation.addListener('willBlur', () => {
+        //   const offset = this.state.scrollPosition;
+        //   console.log('llgaaaa', offset)
+        //   setTimeout(() => {
+        //     console.log('this.flatlist',this.flatlist.current.scrollToOffset())
+        //     this.flatlist.current.getNode().scrollToOffset({ 
+        //         offset
+        //     })
+        //   }, 500)
+        // })
     }
 
-    searchText = (e) => {
-        this.setState({ searchText:e })
-        let text = e.toLowerCase()
-        let products = this.state.products
-        let filteredName = products.filter((item) => item._data.name.toLowerCase().match(text) || item._data.brand.toLowerCase().match(text))
-   
-        if (!text || text === '') {
-          this.setState({
-            products: this.props.dataProducts.products,
-            filter: true
-          })
-        } else if (!Array.isArray(filteredName) && !filteredName.length) {
+    searchText = () => {
+        let word = this.state.searchText.toLowerCase()
+        const store_id = this.props.store.store.store_id;
+        this.props.getProductsFilter(store_id, word)
+        this.setState({ msgsearch : 'No encontramos resultados para su busqueda.'})
+        // console.log('this.props.dataProducts',this.props.dataProducts)
+        // let products = this.props.dataProducts.products;
+        // let filteredName = products.filter((item) => item._data.name.toLowerCase().match(text) || item._data.brand.toLowerCase().match(text))
+        // if (!text || text === '') {
+        //   this.setState({
+        //     productsFilter: this.props.dataProducts.products,
+        //     filter: true
+        //   })
+        // } else if (!Array.isArray(filteredName) && !filteredName.length) {
 
-        } else if (Array.isArray(filteredName)) {
-        if(filteredName.length > 0){
-            this.setState({
-                products: filteredName
-            })
-        } else {
-            e.slice(0, -1)
-            this.setState({ searchText:e })
-            showAlertError('No se encontro ningun producto con este nombre');
-        }   
-       
-        }
+        // } else if (Array.isArray(filteredName)) {
+        //     if(filteredName.length > 0){
+        //         this.setState({
+        //             productsFilter : filteredName
+        //         })
+        //     } else {
+        //         e.slice(0, -1)
+        //         this.setState({ searchText:e })
+        //         showAlertError('No se encontro ningun producto con este nombre');
+        //     }      
+        // }
     }
 
     editProduct = (product) => {
@@ -145,7 +169,7 @@ class ProductsScreen extends Component {
                                     categories : newCategories }); 
                 }},
             ],
-            {cancelable: false},
+            { cancelable: false},
         );    
     }
 
@@ -262,13 +286,58 @@ class ProductsScreen extends Component {
 
     componentWillReceiveProps (newProps) {
         if( newProps.dataProducts !== this.props.dataProducts ) {
-            this.setState({filter: true})
+            console.log(' newProps.dataProducts', newProps.dataProducts)
+            let lastVisibleData = this.state.lastVisible;
+            if(this.state.lastVisible.length > 0){
+                let exist = this.state.lastVisible.filter((value) => value.category === this.state.selectedTapBarCategory);
+                if(exist.length === 0) {
+                    // let number = newProps.dataProducts.products.filter((product) => product._data.category_id === this.state.selectedTapBarCategory);
+                    let lastVisibleData = this.state.lastVisible;
+                    lastVisibleData.push({
+                        category: this.state.selectedTapBarCategory,
+                        lastVisible : 10
+                    })
+                    this.setState({
+                        lastVisible : lastVisibleData
+                    })
+                }
+            } else {
+                lastVisibleData.push({
+                    category: newProps.dataProducts.products[0]._data.category_id,
+                    lastVisible : 10
+                })
+            }
+            this.setState({filter: true, lastVisible : lastVisibleData, lastVisibleNow : 10})
         }
     }
     
+    retrieveMore = async () => {
+        // let lastVisible = this.state.lastVisible.filter((value) => value.category === this.state.selectedTapBarCategory);
+        let number = this.props.dataProducts.products.filter((product) => product._data.category_id === this.state.selectedTapBarCategory);
+        let lastVisibleData = this.state.lastVisible;
+        let lastVisibleNowData = 10;
+
+        for (let i = 0; i < lastVisibleData.length; i++) {
+            if( lastVisibleData[i].category === this.state.selectedTapBarCategory){
+                let number = lastVisibleData[i].lastVisible + 10
+                lastVisibleData[i].lastVisible = number; 
+                lastVisibleNowData = number;
+            }                
+        }
+
+        this.setState({
+            lastVisible : lastVisibleData,
+            lastVisibleNow : lastVisibleNowData
+        })
+    };
+
+    handleScroll = (event) => {
+        this.setState({ scrollPosition: event.nativeEvent.contentOffset.y });
+    }
 
     render() {
-        const { store, dataProducts, loading } = this.props;
+        const { dataProducts } = this.props;
+        console.log('dataProducts',dataProducts);
         const data = [
             {'title' : 'Menu',
             'items' : [ "Agregar","Categorías", "Productos"]
@@ -293,31 +362,31 @@ class ProductsScreen extends Component {
                             source={require('../../../../../assets/icons/down-black.png')}/>
                         </TouchableOpacity>
                         <View style={styles.bodyModal}>
-                                <Text style={{
-                                    marginLeft: 15,
-                                    marginRight: 15,
-                                    marginBottom:20,
-                                    color: '#58647a',
-                                    fontSize: 20,
-                                    fontWeight: 'bold'
-                                }}>Agregar Categoria</Text>
-                                <Form style={styles.bodyModal}>
-                                    <Item floatingLabel>
-                                        <Label>Nombre de categoria</Label>
-                                        <Input 
-                                        name="category"  
-                                        onChangeText={(ref) => { this.setState({ category : ref })}}
-                                        />
-                                    </Item>
-                                    <Item style={{marginTop:30}}>
-                                        <ButtonRegister 
-                                        title="Guardar" 
-                                        click={  () => this.addCategory() }                           
-                                        invalid={ this.state.category === '' ? true : false } 
-                                        color="black"
-                                        />
-                                    </Item>                                  
-                                </Form>
+                            <Text style={{
+                                marginLeft: 15,
+                                marginRight: 15,
+                                marginBottom:20,
+                                color: '#58647a',
+                                fontSize: 20,
+                                fontWeight: 'bold'
+                            }}>Agregar Categoria</Text>
+                            <Form style={styles.bodyModal}>
+                                <Item floatingLabel>
+                                    <Label>Nombre de categoria</Label>
+                                    <Input 
+                                    name="category"  
+                                    onChangeText={(ref) => { this.setState({ category : ref })}}
+                                    />
+                                </Item>
+                                <Item style={{marginTop:30}}>
+                                    <ButtonRegister 
+                                    title="Guardar" 
+                                    click={  () => this.addCategory() }                           
+                                    invalid={ this.state.category === '' ? true : false } 
+                                    color="black"
+                                    />
+                                </Item>                                  
+                            </Form>
                         </View>
                     </View>
                 </Modal>
@@ -339,76 +408,128 @@ class ProductsScreen extends Component {
                     </View>
                 </View>  
                 <View style={styles.mainContainer}>
-                <View style={{ flexDirection:'row', marginTop:10, justifyContent:'center', marginRight:10}}>
-                    <View style={{ flex:2, marginTop:10, marginLeft:10,marginRight:10, justifyContent:'center',  height:45}}>
-                        <TextInput
-                        paddingLeft={12}
-                        style={styles.searchBar}
-                        value={this.state.searchText}
-                        onChangeText={value => this.searchText(value)}
-                        placeholder='Producto' />
+                    <View style={{ flexDirection:'row', marginTop:10, justifyContent:'center', marginRight:10}}>
+                        <View style={{ flex:2, marginTop:10, marginLeft:10,marginRight:10, justifyContent:'center', height:45 }}>
+                            <TextInput
+                            paddingLeft={12}
+                            style={styles.searchBar}
+                            value={this.state.searchText}
+                            onChangeText={value => this.setState({ searchText:value})}
+                            placeholder='Producto' />
+                        </View>
+                        <View style={{flex:1, marginLeft:10, justifyContent:'center'}}>
+                            <ButtonGeneral   
+                            title="Buscar" 
+                            width={100}
+                            height={30}
+                            click={() => this.searchText()}
+                            color="black"
+                            fontColor="white"/>
+                        </View>
                     </View>
-                    <View style={{flex:1, marginLeft:10, justifyContent:'center'}}>
-                        <ButtonGeneral   
-                        title="Buscar" 
-                        width={100}
-                        height={30}
-                        click={() => this.deleteUser()}
-                        color="black"
-                        fontColor="white"/>
-                    </View>
-
-                </View>
-                {  categories !== null ?
-                <View style={{flex:1}}>
-                    <FlatList
-                        showsHorizontalScrollIndicator={false}
-                        horizontal={true}
-                        data={categories}
-                        extraData={this.state.selectedTapBarIndex }
-                        renderItem={({item, index}) => this.renderTapBarItem(item, index)}
-                    />
-                    <View style={{marginTop:10, marginLeft:10, justifyContent:'center',  height:45, marginRight:10}}>
-                        <TextInput
-                        paddingLeft={12}
-                        style={styles.searchBar}
-                        value={this.state.searchText}
-                        onChangeText={value => this.searchText(value)}
-                        placeholder={`Buscar producto en ${this.state.categorySelected}`} />
-                    </View>
-                    <ScrollView> 
-                        { dataProducts !== null ?
-                            this.renderProducts()
-                        : 
-                            <View style={{alignItems:'center', justifyContent:'center',marginTop:20}}>
-                                <Text>No hay productos para esta categoria.</Text>
+                    { this.state.searchText !== '' && (
+                        <TouchableOpacity onPress={() => this.setState({ searchText: '', msgsearch: ''})}>
+                            <Text style={{marginLeft:12, color:'red', textDecorationColor:'red'}}>Limpiar filtro</Text>
+                        </TouchableOpacity>
+                    )}
+                    {  categories !== null ?
+                    <View style={{flex:1}}>
+                        { this.state.searchText === '' ?
+                            <View style={{flex:1}}>
+                                <View style={{flex:1}}>
+                                    <FlatList
+                                    showsHorizontalScrollIndicator={false}
+                                    horizontal={true}
+                                    data={categories}
+                                    extraData={this.state.selectedTapBarIndex }
+                                    renderItem={({item, index}) => this.renderTapBarItem(item, index)}
+                                    />
+                                </View>
+                                <View style={{flex:6}}> 
+                                    { dataProducts !== null ?
+                                        this.renderProducts()
+                                    : 
+                                        <View style={{alignItems:'center', justifyContent:'center',marginTop:20}}>
+                                            <Text>No hay productos para esta categoria.</Text>
+                                        </View>
+                                    }
+                                </View>
+                            </View>
+                            :
+                            <View style={{flex:1}}>
+                                <View style={{flex:1}}>
+                                    { dataProducts.filter.length > 0 ?
+                                        <FlatList
+                                        data={ dataProducts.filter }
+                                        extraData={ dataProducts.filter }
+                                        renderItem={({item, index}) => {
+                                            return(
+                                                <CardProductStore 
+                                                click={(product) => { this.editProduct(product)}} 
+                                                disable = {(product) => { this.disableProduct(product)}}
+                                                active = {(product) => { this.activeProduct(product)}}
+                                                item={item} 
+                                                index = {index}/>
+                                            )
+                                        }}
+                                        /> 
+                                        :
+                                        <View style={{alignItems:'center', justifyContent:'center',marginTop:20}}>
+                                            <Text>{this.state.msgsearch}</Text>
+                                        </View>
+                                    }
+                                </View>
                             </View>
                         }
-                    </ScrollView>
-                </View> : <View></View>
-                }
-                </View>
+                    </View> : <View></View>
+                    }
+                </View>  
             </SafeAreaView>
         );
     }
 
+    // Render Footer
+    renderFooter = (productsTotal, products) => {
+        if(productsTotal.length != products.length){
+            return (
+                <View style={{alignItems:'center', padding:10}}>
+                    <ActivityIndicator />
+                    <Text>Cargando productos...</Text>
+                </View>
+                )
+        } else {
+            return null;
+        } 
+    };
+
     renderProducts() {
         const data = this.props.dataProducts.products;
         if(data){
-            const products = data.filter(product => product._data.category_id === this.state.selectedTapBarCategory);
+            const productsTotal = data.filter( (product, index) => product._data.category_id === this.state.selectedTapBarCategory);
+            const products = productsTotal.filter( (product, index) => index <= this.state.lastVisibleNow);
             if(products.length > 0) {
                 if(this.state.filter === true){
                     this.setState({ products : '', filter : false })
                     this.setState({ products : products })
+                } else if (this.state.products.length != products.length){
+                    this.setState({ products : products })
                 }
-                return <FlatList
-                showsHorizontalScrollIndicator={false}
-                horizontal={false}
-                numColumns={1}
-                extraData={this.state.products}
-                data={this.state.products}
-                renderItem={({item, index}) => this.renderCardProduct(item, index)}
-            />
+                return (
+                    <View style={{flex:1, marginBottom:10}}>
+                        <FlatList
+                        onScroll={this.handleScroll} 
+                        ref={(ref) => { this.flatlist = ref; }}
+                        onEndReached={ this.retrieveMore }
+                        //ListFooterComponent={this.renderFooter(productsTotal, products)}
+                        onEndReachedThreshold={0.01}
+                        horizontal={false}
+                        numColumns={1}
+                        extraData={this.state.products}
+                        data={this.state.products}
+                        renderItem={({item, index}) => this.renderCardProduct(item, index)}
+                        />
+                    </View>
+                )
             } else {
                 return (
                     <View style={{alignItems:'center', justifyContent:'center',marginTop:20}}>
@@ -423,7 +544,6 @@ class ProductsScreen extends Component {
                 )
             }
         }
-       
     }
 
     renderCardProduct(item, index) {
@@ -443,13 +563,18 @@ class ProductsScreen extends Component {
         }
     }
 
-
     renderTapBarItem(item, index) {
         return (
             <TouchableWithoutFeedback
                 onPress={() => {
                     this.setState({ selectedTapBarIndex: index, selectedTapBarCategory: item.id,  filter : true, categorySelected : item['name'] });
-                    this.getProductsByCategory(item.id)
+                    let exist = this.state.lastVisible.filter((value) => value.category === item.id);
+                    if(exist.length === 0) {
+                        this.setState({ lastVisibleNow : 10 })
+                        this.getProductsByCategory(item.id, 0, false)
+                    } else {
+                        this.setState({ lastVisibleNow : exist[0].lastVisible })
+                    }
                 }}>
                 <View style={{justifyContent: 'center', flex: 1, marginTop:10}}>
                     <Text style={
@@ -612,7 +737,6 @@ const styles = StyleSheet.create({
 
 
 const mapStateToProps = state => {
-    console.log('state products Sreen', state)
     return {
         user : state.ReducerSesion && state.ReducerSesion.user ? state.ReducerSesion.user : false,
         loading: state.ReducerLoading.loading,
@@ -622,9 +746,13 @@ const mapStateToProps = state => {
 };
   
 const mapDispatchToProps = dispatch => ({
-    getProducts: (idCategory, store_id ) => {
+    getProducts: (data ) => {
         dispatch(ActionSetLoading());
-        dispatch(ActionGetProductsByCategory(idCategory, store_id))
+        dispatch(ActionGetProductsByCategory(data))
+    },
+    getProductsFilter: (store_id, word) => {
+        dispatch(ActionSetLoading());
+        dispatch(ActionGetProductsByKeyword(store_id, word))
     },
     disableProduct: ( id, values, store_id ) => {
         dispatch(ActionSetLoading());
@@ -636,4 +764,5 @@ const mapDispatchToProps = dispatch => ({
     },
 });
   
-  export default connect(mapStateToProps, mapDispatchToProps)(ProductsScreen);
+export default connect(mapStateToProps, mapDispatchToProps)(ProductsScreen);
+

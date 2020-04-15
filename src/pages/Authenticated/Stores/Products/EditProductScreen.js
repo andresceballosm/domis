@@ -24,6 +24,7 @@ class EditProductScreen extends Component {
     editProduct = () => {
         const id = this.props.navigation.getParam('id', '');
         const values = this.props.form.values;
+        console.log('values', values);
         const image = this.props.image;
         const store_id = this.props.store.store.store_id;
         this.props.editProduct(id,values,image,store_id, this.props.navigation)
@@ -159,7 +160,7 @@ const mapDispatchToProps = dispatch => ({
     editProduct: ( id,values,image,store_id, navigation ) => {
         dispatch(ActionSetLoading());
         dispatch(ActionUpdateProduct({id,values,image,store_id}));
-        navigation.pop();
+        navigation.goBack();
     },
     loadImage:(image)=>{
         dispatch(ActionUploadImage(image));

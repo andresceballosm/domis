@@ -4,7 +4,17 @@ import moment from "moment";
 import 'moment/locale/es'
 import { ActionStopLoading, ActionSetCategories } from '../actions/ActionApp';
 import { showAlertError, showAlertSuccess } from '../../utils/Alerts';
-import { ActionDataStores, ActionDataCategories, ActionDataProductsByCategory, ActionGetProductsByCategory, ActionClearBasket, ActionSetStore, ActionUpdateProductsByCategory, ActionDeleteProductByCategory, ActionAddProductsByCategory } from '../actions/ActionStores';
+import { 
+  ActionDataStores, 
+  ActionDataCategories, 
+  ActionDataProductsByCategory, 
+  ActionGetProductsByCategory, 
+  ActionClearBasket, 
+  ActionSetStore, 
+  ActionDataProductsByFilter,
+  ActionUpdateProductsByCategory, 
+  ActionDeleteProductByCategory, 
+  ActionAddProductsByCategory } from '../actions/ActionStores';
 import { dataBase, storage } from '../../services/Firebase';
 import { getGeohashRange } from '../../components/GeoHashRange';
 import { ActionGetOrders, ActionGetOrdersStoreByDate } from '../actions/ActionOrder';
@@ -47,7 +57,6 @@ function* GetStoreById(data){
   try {
     const storeRef = dataBase.collection('stores').doc(id);
     const store = yield call(getStoresByType, storeRef);
-    console.log('store', store);
     yield put(ActionSetStore(store));
   } catch (error) {
     console.log('error', error)
@@ -78,21 +87,21 @@ function* GetStore(data){
 function* GetStoresByType(values) {
   const { storetype, geohash, range } = values
   try {
-    console.log('range',range);
-    console.log('geohash',geohash);
     const ref = dataBase.collection('stores')
                         .where("geohash", ">=", range.lower)
                         .where("geohash", "<=", range.upper)
     const stores = yield call(getStoresByType, ref)
     const dataStores = stores._docs;
+    console.log('dataStores',dataStores);
     var data = []
     for (let i = 0; i < dataStores.length; i++) {
       if(dataStores[i]._data.storetype == storetype){
         const lat = dataStores[i]._data.latitude;
         const lng = dataStores[i]._data.longitude;
-        const range = getGeohashRange(lat, lng, dataStores[i]._data.perimeter);
-        if(geohash >= range.lower && geohash <= range.upper){
-            data.push(dataStores[i])
+        const rangeStore = getGeohashRange(lat, lng, dataStores[i]._data.perimeter);
+        console.log('rangeStore',rangeStore)
+        if(geohash >= rangeStore.lower && geohash <= rangeStore.upper){
+          data.push(dataStores[i])
         }
       }      
     }
@@ -125,9 +134,11 @@ function* GetCategoriesByStore(values) {
 
 function* GetProductsByFind(values) {
   const { word , store_id } = values;
+  console.log('word',word)
   try {
-    const ref = dataBase.collection(`${'products' + '_' + store_id}`).where("category_id", "==", idCategory)
+    const ref = dataBase.collection(`${'products' + '_' + store_id}`).where("keywords", "array-contains", word)
     const products = yield call(getProductsByCategory, ref);
+    console.log('products',products);
     const lists = [];
     if(products){
       const productLists = products._docs;
@@ -136,7 +147,7 @@ function* GetProductsByFind(values) {
         lists.push(productLists[i]);
       }
     }
-    yield put(ActionDataProductsByCategory( lists )); 
+    yield put(ActionDataProductsByFilter( lists )); 
     yield put(ActionStopLoading());
     
   } catch (error) {
@@ -147,9 +158,11 @@ function* GetProductsByFind(values) {
 }
 
 function* GetProductsByCategory(values) {
-  const { idCategory, store_id } = values
+  const { id, store_id } = values.data;
+  console.log('id',id)
+  console.log('store_id',store_id)
   try {
-    const ref = dataBase.collection(`${'products' + '_' + store_id}`).where("category_id", "==", idCategory)
+    const ref =  dataBase.collection(`${'products' + '_' + store_id}`).where("category_id", "==", id)
     const products = yield call(getProductsByCategory, ref);
     const lists = [];
     if(products){
@@ -304,6 +317,7 @@ export const sagaStores = [
   takeEvery(CONSTANTS.GET_STORES_BY_ID, GetStoreById),
   takeEvery(CONSTANTS.GET_CATEGORIES_BY_STORE, GetCategoriesByStore),
   takeEvery(CONSTANTS.GET_PRODUCTS_BY_CATEGORY, GetProductsByCategory),
+  takeEvery(CONSTANTS.GET_PRODUCTS_BY_KEYWORD, GetProductsByFind),
   takeEvery(CONSTANTS.CREATE_ORDER, CreateOrder),
   takeEvery(CONSTANTS.DISABLE_STORE, DisableStore),
   takeEvery(CONSTANTS.UPDATE_PRODUCT, UpdateProduct),

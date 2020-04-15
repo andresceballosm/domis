@@ -185,7 +185,6 @@ const styles = StyleSheet.create({
 })
 
 const mapStateToProps = state => {
-    console.log('state in basket', state)
     return {
         user : state.ReducerSesion && state.ReducerSesion.user ? state.ReducerSesion.user : false,
         loading: state.ReducerLoading.loading,

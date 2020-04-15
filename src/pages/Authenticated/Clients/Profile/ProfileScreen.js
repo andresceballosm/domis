@@ -106,52 +106,7 @@ class ProfileScreen extends Component {
                         <Text style={{fontSize:30, fontFamily:'HermanoAlto Round', paddingTop:12}}>DOMIS</Text>
                     </View>
                 </View>
-                <ScrollView style={styles.mainContainer}>
-                <View style={styles.topContainer}>
-                    <View style={{paddingBottom:10, paddingLeft:20}}>
-                        <Text style={{
-                            marginRight: 25,
-                            marginTop: 30,
-                            color: '#58647a',
-                            fontSize: 30,
-                            fontWeight: 'bold'
-                        }}>
-                            Mi dirección de entrega!
-                        </Text>
-                    </View>
-                </View>  
-                <View style={{flex:1, flexDirection:'row', marginBottom:10}}>
-                    <TouchableOpacity 
-                    style={styles.touchableAddress}
-                    onPress={() => this.setState({editable : !this.state.editable})}>
-                        <Image style={styles.edit}
-                            source={require('../../../../../assets/icons/plus-100.png')}/>  
-                    <Text style={styles.textTouchableAddress}>Agregar dirección</Text>    
-                    </TouchableOpacity>   
-                </View>
-                { this.props.dataUser ?
-                    <View style={{flex:4}}>
-                        <View style={{ marginBottom:10, alignItems:'center', justifyContent:'center'}}>
-                            <FieldSelect
-                            data={ dataUser.address }
-                            initialValue={this.state.address}
-                            change={(value) => this.onChange(value)}
-                            />
-                        </View>
-                    </View>
-                    : <View></View>
-                
-                }
-                { this.state.editable ?
-                   <View style={{flex:4,marginTop:10, paddingHorizontal:20}}>         
-                        <DeliveryForm 
-                        //data={this.state.address} 
-                        editable={this.state.editable}
-                        note={false} 
-                        addOrder={this.addAddress} 
-                        buttonName="Guardar"/>
-                    </View> : <View></View>
-                }
+                <ScrollView style={styles.mainContainer}>  
                 <View  style={[styles.bottomGridContainer, { marginTop: 50}]}>
                     <ButtonGeneral 
                     title="Cerrar sesion" 

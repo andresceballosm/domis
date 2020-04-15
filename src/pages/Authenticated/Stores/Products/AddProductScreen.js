@@ -18,10 +18,38 @@ let screenWidth = Dimensions.get('window').width;
 
 class AddProductScreen extends Component {
 
+    createKeywords = name => {
+        const arrName = [];
+        let curName = '';
+        name.split('').forEach(letter => {
+          curName += letter;
+          arrName.push(curName);
+        });
+        return arrName;
+    }
+    
+    generateKeywords = (product) => {
+        const [ name, brand, description ] = product;
+        const nameLower = name.toLowerCase();
+        const brandLower = brand.toLowerCase();
+        const keyWordName = this.createKeywords(`${nameLower}`);
+        const keyWordBrand = this.createKeywords(`${brandLower}`);
+        return [
+            ...new Set([
+            '',
+            ...keyWordName,
+            ...keyWordBrand,
+            ])
+        ];
+    };
+
     addProduct = () => {
         const values = this.props.form.values;
+        const { name, brand } = values;
+        const keywords = this.generateKeywords([name, brand])
         Object.assign( values, {
-            active : true
+            active : true,
+            keywords
         }) 
         const image = this.props.image;
         const store_id = this.props.store.store.store_id;

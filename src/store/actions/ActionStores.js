@@ -35,9 +35,14 @@ export const ActionDataCategories = (categories) => ({
     categories
 });
 
-export const ActionGetProductsByCategory = (idCategory, store_id) => ({
+export const ActionGetProductsByCategory = (data) => ({
     type: CONSTANTS.GET_PRODUCTS_BY_CATEGORY,
-    idCategory, store_id
+    data
+});
+
+export const ActionGetProductsByKeyword = ( store_id, word) => ({
+    type: CONSTANTS.GET_PRODUCTS_BY_KEYWORD,
+    store_id, word
 });
 
 export const ActionUpdateProductsByCategory = (product) => ({
@@ -57,6 +62,11 @@ export const ActionDeleteProductByCategory = ( id ) => ({
 
 export const ActionDataProductsByCategory = (products) => ({
     type: CONSTANTS.SET_PRODUCTS_BY_CATEGORY,
+    products
+});
+
+export const ActionDataProductsByFilter = (products) => ({
+    type: CONSTANTS.SET_PRODUCTS_BY_KEYWORD,
     products
 });
 

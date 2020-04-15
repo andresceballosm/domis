@@ -218,6 +218,39 @@ export const fieldInputOrder = (props) => {
   );
 };
 
+export const FieldInputOrder = (props) => {
+  return (
+    <View>
+      <Text style={{fontSize:16, fontFamily:'Ubuntu-Bold'}}>{props.label}:</Text>
+      <TextInput
+          style={{height: 40, borderBottomWidth:.5}}
+          editable={props.editable}
+          placeholder={props.placeholder}
+          onChangeText={ (value) => props.onChange(value)}
+          keyboardType = {props.keyboardType}
+          value={props.value}
+      />
+      <View style={styles.linea} />
+    </View>
+  );
+};
+
+export const FieldInputNumber = (props) => {
+  return (
+    <View>
+      <Text style={{fontSize:16, fontFamily:'Ubuntu-Bold'}}>{props.label}:</Text>
+      <TextInput
+          style={{height: 40, borderBottomWidth:.5}}
+          editable={props.editable}
+          placeholder={props.placeholder}
+          onChangeText={(value) => props.onChange(value.replace(/[^0-9]/g, ''))}
+          keyboardType = {props.keyboardType}
+          value={props.value}
+      />
+    </View>
+  );
+};
+
 export const fieldInputNumber = (props) => {
   return (
     <View>
@@ -240,7 +273,7 @@ export const fieldInputNumber = (props) => {
 
 export const FieldSelect = (props) => {
   return(
-    <View style={{flex:1}}>
+    <View style={{flex:1, width:'80%'}}>
         <ModalSelector
         data={ props.data }
         disabled={props.editable}
@@ -251,7 +284,20 @@ export const FieldSelect = (props) => {
         />
     </View>
   )
+}
 
+export const FieldSelectPerimeter = (props) => {
+  return(
+    <View style={{flex:1, width:'80%'}}>
+        <ModalSelector
+        data={ props.data }
+        labelExtractor= { item => item }
+        initValue={ props.initialValue ? props.initialValue : '' }
+        cancelButtonAccessibilityLabel='Cancelar'
+        onChange={(value) => props.change(value) } 
+        />
+    </View>
+  )
 }
 
 export const FieldDate = (props) => {

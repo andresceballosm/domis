@@ -15,7 +15,6 @@ export const ReducerOrders = ( state = initState , action) => {
         case CONSTANTS.REDUCER_PRODUCT_ORDER:
                 return { ...state, orders: action.orders };
         case CONSTANTS.ADD_PRODUCT_ORDER:
-                console.log('state add', state);
                 const addedItem = state.addedItems.find(item=> item.id === action.id)
                 // addedItem.quantityProduct += 1 
                 // let newTotal = state.total + addedItem.price

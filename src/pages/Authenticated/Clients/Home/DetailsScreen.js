@@ -11,7 +11,6 @@ import {
     Platform,
     SafeAreaView } from 'react-native'
 import { Transition} from 'react-navigation-fluid-transitions'
-import { Header } from 'react-navigation';
 import { MapsComponent } from '../../../../components/MapsComponent';
 import { ActionSetLoading } from '../../../../store/actions/ActionApp';
 import { ActionGetStoresByType } from '../../../../store/actions/ActionStores';
@@ -20,20 +19,6 @@ import { showAlertError } from '../../../../utils/Alerts';
 
 
 let screenWidth = Dimensions.get('window').width;
-
-const validateIcon = (icon) => {
-    switch (icon) {
-        case 'cart':
-            return require('../../../../../assets/icons/cart.png') 
-        case 'pharmacy':
-            return require('../../../../../assets/icons/pharmacy.png')
-        case 'fruver':
-            return require('../../../../../assets/icons/fruver.png')
-        default:
-            break;
-    }
-}
-
 
 class DetailsScreen extends Component {
     constructor(props) {
@@ -150,7 +135,7 @@ class DetailsScreen extends Component {
 
     renderDetailListCell(item, index) {
         return (
-                <TouchableOpacity onPress={() => {
+                <TouchableOpacity key={index} onPress={() => {
                     this.setState({
                         latitude:item._data.latitude,
                         longitude:item._data.longitude,
@@ -160,14 +145,19 @@ class DetailsScreen extends Component {
                     <Transition shared={item['name']}>
                         <View style={styles.card}>
                             <View style={{flex:1, marginTop:5}}>
+                            { item._data.image ? 
                                 <Image style={styles.image}
-                                    source={require('../../../../../assets/images/ekoplaza.jpg')}/>
+                                source={{ uri: item._data.image }} />
+                                : 
+                                <Image style={styles.image}
+                                source={require('../../../../../assets/images/ekoplaza.jpg')}/>
+                            }                           
                             </View>
                             <View style={{flex:1, alignItems:'center'}}>
                                 <View style={{marginTop:18, flexDirection:'row'}}>
                                     <Text style={{fontSize:16,fontFamily:'Georgia', color:'#666666'}}>{item._data.name}</Text>   
                                 </View>  
-                                <View style={{backgroundColor:'black', borderRadius:10, alignItems:'center', marginTop:5, width:80}}>
+                                <View style={{backgroundColor:'black', borderRadius:10, alignItems:'center', justifyContent:'center', marginTop:5, width:80, height:30}}>
                                     <TouchableOpacity onPress={(event) => { this.goToStore(item)}}>
                                         <Text style={{fontFamily:'Ubuntu-Bold', color:'white'}}> Visitar</Text>
                                     </TouchableOpacity>
@@ -328,7 +318,6 @@ const styles = StyleSheet.create({
 });
 
 const mapStateToProps = state => {
-    console.log('state', state)
     return{
         user : state.ReducerSesion && state.ReducerSesion.user ? state.ReducerSesion.user : false,
         loading: state.ReducerLoading.loading,
@@ -340,7 +329,6 @@ const mapStateToProps = state => {
   const mapDispatchToProps = dispatch => ({
     getStores: (storetype, geohash, range) => {
       dispatch(ActionSetLoading());
-      console.log('storetype',storetype)
       dispatch(ActionGetStoresByType(storetype, geohash, range))
     },
     setPosition:(position) => {

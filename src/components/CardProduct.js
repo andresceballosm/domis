@@ -15,10 +15,36 @@ export const CardProduct = (props) => {
             <Text style={styles.title}> {props.item._data.name} </Text>
             <Text style={styles.subtitle}> {props.item._data.brand} / {props.item._data.quantity}  {props.item._data.unity} </Text>
             <View style={{alignItems:'center', justifyContent:'center'}}>
-                <Text style={styles.title}>{validateMoney(props.item._data.money)} {props.item._data.price} </Text>
+                <Text style={styles.title}>{validateMoney(props.item._data.money)} {props.item._data.price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} </Text>
             </View>
             <View style={styles.footer}>
                 <View style={{backgroundColor:'#78b3a3', borderRadius:10, alignItems:'center',justifyContent:'center', marginTop:5, width:90, height:30}}>
+                    <TouchableOpacity onPress={(event) => { props.click(props.item)}}>
+                        <Text style={styles.buttonText}>Agregar</Text>
+                    </TouchableOpacity>
+                </View>  
+            </View>
+        </View>
+    )
+}
+
+export const CardProductHorizontal = (props) => {
+    return (
+        <View style={styles.cardStore}>
+            <View style={[styles.viewImg], { flex:1, marginLeft:5}}>
+                <Image style={{height:80,width:80, marginTop:5}}
+                    source={ props.item._data.image ? 
+                    { uri: props.item._data.image } 
+                    : require('../../assets/icons/basket-100.png')
+                    }/>
+            </View>
+            <View style={{flex:2}}>
+                <Text style={styles.title}> {props.item._data.name} </Text>
+                <Text style={styles.subtitle}> {props.item._data.brand} / {props.item._data.quantity}  {props.item._data.unity} </Text>
+                <Text style={styles.title}>{validateMoney(props.item._data.money)} {props.item._data.price} </Text>
+            </View>
+            <View style={[styles.footer], { flex:1}}>
+                <View style={[ styles.buttonAction, { backgroundColor:'#78b3a3'}]}>
                     <TouchableOpacity onPress={(event) => { props.click(props.item)}}>
                         <Text style={styles.buttonText}>Agregar</Text>
                     </TouchableOpacity>

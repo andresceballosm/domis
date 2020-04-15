@@ -1,29 +1,39 @@
-import React, { Component } from 'react';
+import React, { Component, useEffect, Fragment } from 'react';
 import { connect } from 'react-redux';
-import { StyleSheet, View } from 'react-native';
+import SplashScreen from 'react-native-splash-screen';
+import { StyleSheet, View, Platform, StatusBar } from 'react-native';
 import Selection from './src/Selection';
 import { StackNoAuthenticated } from './src/pages/NoAuthenticated/StackNoAuthenticated';
 import { LoadingSmall } from './src/components/LoadingSmall';
 import { authentication } from './src/services/Firebase';
-import { ActionSetSesion, ActionLogout, ActionSetSesionGoogle } from './src/store/actions/ActionsAuthentication';
+import { ActionLogout, ActionSetSesionGoogle } from './src/store/actions/ActionsAuthentication';
+
 
 class App extends Component {
-
   componentDidMount(){
+    SplashScreen.hide();
     this.props.authentication();
   }
 
   render() {
+
+    // useEffect(() => {
+    //   SplashScreen.hide();
+    // }, []);
+
     return (
-      <View style={styles.Content}>
-        { this.props.user ? 
-          <Selection user={this.props.user}/>
-          : 
-          <StackNoAuthenticated /> }
-        { this.props.loading === 'true' && (
-          <LoadingSmall />
-        )}
-      </View>
+      <Fragment>
+        { Platform.OS === 'ios' && <StatusBar barStyle="dark-content" /> }
+        <View style={styles.Content}>
+          { this.props.user ? 
+            <Selection user={this.props.user}/>
+            : 
+            <StackNoAuthenticated /> }
+          { this.props.loading && (
+            <LoadingSmall />
+          )}
+        </View>
+      </Fragment>
     );
   }
 };

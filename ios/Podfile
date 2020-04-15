@@ -42,12 +42,14 @@ target 'domis' do
 
   pod 'RNGoogleSignin', :path => '../node_modules/@react-native-community/google-signin'
 
+
   # target 'domisTests' do
   #   inherit! :search_paths
   #   # Pods for testing
   # end
   pod 'RNFirebase', :path => '../node_modules/react-native-firebase/ios'
   pod 'react-native-geolocation', :path => '../node_modules/@react-native-community/geolocation'
+  pod 'react-native-splash-screen', :path => '../node_modules/react-native-splash-screen'
   pod 'Firebase/Core'
   pod 'Firebase/Auth', '~> 6.3.0'
   pod 'Firebase/Database', '~> 6.3.0'

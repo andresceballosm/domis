@@ -51,7 +51,8 @@ export const ReducerCategories = ( state = null , action) => {
 
 const initStateProducts = {
     products:[],
-    productsDetails:[]
+    productsDetails:[],
+    filter:[]
 }
 
 export const ReducerProducts = ( state = initStateProducts , action) => {
@@ -62,11 +63,12 @@ export const ReducerProducts = ( state = initStateProducts , action) => {
             } else {
                 return { ...state,  products: [...state.products, ...action.products] };
             }
+        case CONSTANTS.SET_PRODUCTS_BY_KEYWORD:       
+            return { ...state,  filter: action.products };
+            
         case CONSTANTS.UPDATE_PRODUCTS_BY_CATEGORY:
             var productsNow = state.products;
             for (let i = 0; i < productsNow.length; i++) {
-                console.log('productsNow[i]._ref._documentPath._parts[1]',productsNow[i]._ref._documentPath._parts[1])
-                console.log('action.product',action.product)
                 if(productsNow[i]._ref._documentPath._parts[1] === action.product.id){
                     productsNow[i]._data = action.product;
                 }

@@ -13,6 +13,7 @@ import com.oblador.vectoricons.VectorIconsPackage;
 import com.facebook.soloader.SoLoader;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
+import org.devio.rn.splashscreen.SplashScreenReactPackage;
 
 //FIREBASE MODULES
 import io.invertase.firebase.auth.RNFirebaseAuthPackage;
@@ -20,7 +21,7 @@ import io.invertase.firebase.firestore.RNFirebaseFirestorePackage;
 import io.invertase.firebase.messaging.RNFirebaseMessagingPackage;
 import io.invertase.firebase.notifications.RNFirebaseNotificationsPackage; 
 import io.invertase.firebase.storage.RNFirebaseStoragePackage;
-import co.apptailor.googlesignin.RNGoogleSigninPackage;  
+//import co.apptailor.googlesignin.RNGoogleSigninPackage;  
 
 // import com.airbnb.android.react.maps.MapsPackage;
 
@@ -43,8 +44,8 @@ public class MainApplication extends Application implements ReactApplication {
           packages.add(new RNFirebaseNotificationsPackage()); 
           packages.add(new RNFirebaseStoragePackage());
           packages.add(new VectorIconsPackage());
-          // packages.add(new MapsPackage());
-          
+          //packages.add(new SplashScreenReactPackage());
+
           return packages;
         }
 

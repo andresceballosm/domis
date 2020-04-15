@@ -24,6 +24,7 @@
 		454F0385EA044F2E80649993 /* Foundation.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 1CBBECEE8FAC4185B3B40778 /* Foundation.ttf */; };
 		46B54341A2884E65B00871DB /* EvilIcons.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 25101FD00BBF4350B81CE224 /* EvilIcons.ttf */; };
 		524FFFF85D9048AF8239E926 /* Georgia.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 287656BC0C574835807D090F /* Georgia.ttf */; };
+		66930EAB2447446600BB4B99 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 66930EAA2447446600BB4B99 /* GoogleService-Info.plist */; };
 		6BCE94881D6B4792BBCFD6B5 /* MaterialCommunityIcons.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B237AB7018EC41769083F0B1 /* MaterialCommunityIcons.ttf */; };
 		71F6CB82366642359ED4C4C3 /* HermanoAlto Round.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 97CDB67CABF0498D8D90268D /* HermanoAlto Round.ttf */; };
 		763B7B6F26944E9A85A9163C /* Octicons.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 57D68158D8C34C3C9394E9AA /* Octicons.ttf */; };
@@ -31,7 +32,6 @@
 		787AD806541A4AE8B6619EC3 /* Ubuntu-Light-Italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 23CF62ED14CA4011BD03762E /* Ubuntu-Light-Italic.ttf */; };
 		84408669237DE480001C1955 /* libRSKImageCropper.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 84408668237DE480001C1955 /* libRSKImageCropper.a */; };
 		8440866B237DE48C001C1955 /* libQBImagePickerController.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8440866A237DE48C001C1955 /* libQBImagePickerController.a */; };
-		8448B77F23745E0000236FEE /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 8448B77E23745DF900236FEE /* GoogleService-Info.plist */; };
 		8448B78F23746A7E00236FEE /* MapKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8448B78E23746A7E00236FEE /* MapKit.framework */; };
 		8FD55F4075CE4D95B43FF9F9 /* Montserrat-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 48E521F125674FA9B68DE703 /* Montserrat-Bold.ttf */; };
 		91E7048FADED4AD1B01CE399 /* SimpleLineIcons.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F28716C74DE34664BB749827 /* SimpleLineIcons.ttf */; };
@@ -91,13 +91,13 @@
 		54B6F949714448F68AA98CFF /* Ubuntu-Bold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Ubuntu-Bold.ttf"; path = "../assets/fonts/Ubuntu-Bold.ttf"; sourceTree = "<group>"; };
 		577E64280F7042161BD7B83D /* Pods-domisTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-domisTests.debug.xcconfig"; path = "Target Support Files/Pods-domisTests/Pods-domisTests.debug.xcconfig"; sourceTree = "<group>"; };
 		57D68158D8C34C3C9394E9AA /* Octicons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Octicons.ttf; path = "../node_modules/native-base/Fonts/Octicons.ttf"; sourceTree = "<group>"; };
+		66930EAA2447446600BB4B99 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		69FF5AEC606B487BA1820BBA /* Ubuntu-Light.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Ubuntu-Light.ttf"; path = "../assets/fonts/Ubuntu-Light.ttf"; sourceTree = "<group>"; };
 		707F2920CC1243829323E64D /* Feather.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Feather.ttf; path = "../node_modules/native-base/Fonts/Feather.ttf"; sourceTree = "<group>"; };
 		750EBED6004E4E43ACC0EA5E /* CHEESEPIZZA.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = CHEESEPIZZA.ttf; path = ../assets/fonts/CHEESEPIZZA.ttf; sourceTree = "<group>"; };
 		81F789E7F5D24B4086EED1E0 /* Montserrat-Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Montserrat-Regular.ttf"; path = "../assets/fonts/Montserrat-Regular.ttf"; sourceTree = "<group>"; };
 		84408668237DE480001C1955 /* libRSKImageCropper.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libRSKImageCropper.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		8440866A237DE48C001C1955 /* libQBImagePickerController.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libQBImagePickerController.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		8448B77E23745DF900236FEE /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "GoogleService-Info.plist"; path = "../../ios_domis/GoogleService-Info.plist"; sourceTree = "<group>"; };
 		8448B78E23746A7E00236FEE /* MapKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MapKit.framework; path = System/Library/Frameworks/MapKit.framework; sourceTree = SDKROOT; };
 		8448B79023746A8600236FEE /* domis.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = domis.entitlements; path = domis/domis.entitlements; sourceTree = "<group>"; };
 		95627B07ACFE43ECC2854440 /* Pods-domis.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-domis.debug.xcconfig"; path = "Target Support Files/Pods-domis/Pods-domis.debug.xcconfig"; sourceTree = "<group>"; };
@@ -171,8 +171,8 @@
 		13B07FAE1A68108700A75B9A /* domis */ = {
 			isa = PBXGroup;
 			children = (
+				66930EAA2447446600BB4B99 /* GoogleService-Info.plist */,
 				8448B79023746A8600236FEE /* domis.entitlements */,
-				8448B77E23745DF900236FEE /* GoogleService-Info.plist */,
 				008F07F21AC5B25A0029DE68 /* main.jsbundle */,
 				13B07FAF1A68108700A75B9A /* AppDelegate.h */,
 				13B07FB01A68108700A75B9A /* AppDelegate.m */,
@@ -389,7 +389,6 @@
 			files = (
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				13B07FBD1A68108700A75B9A /* LaunchScreen.xib in Resources */,
-				8448B77F23745E0000236FEE /* GoogleService-Info.plist in Resources */,
 				99937CE36B194956848EFABA /* AvenirCondensedHand.ttf in Resources */,
 				949D71A902164C3D8D976B72 /* CHEESEPIZZA.ttf in Resources */,
 				B82334BA3BE5453489B60B83 /* Forque.ttf in Resources */,
@@ -417,6 +416,7 @@
 				AB8C179761394363BF64A970 /* MaterialIcons.ttf in Resources */,
 				763B7B6F26944E9A85A9163C /* Octicons.ttf in Resources */,
 				98BF1A222F6E48EFBA141F4C /* Roboto_medium.ttf in Resources */,
+				66930EAB2447446600BB4B99 /* GoogleService-Info.plist in Resources */,
 				310A472EB13744F39962BF28 /* Roboto.ttf in Resources */,
 				9F1BAEEE3FAB43B786267536 /* rubicon-icon-font.ttf in Resources */,
 				91E7048FADED4AD1B01CE399 /* SimpleLineIcons.ttf in Resources */,
@@ -454,7 +454,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "export NODE_BINARY=node\n../node_modules/react-native/scripts/react-native-xcode.sh";
+			shellScript = "export NODE_BINARY=node\n../node_modules/react-native/scripts/react-native-xcode.sh\n";
 		};
 		1AE33656D25CF84E1B06C7F1 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;

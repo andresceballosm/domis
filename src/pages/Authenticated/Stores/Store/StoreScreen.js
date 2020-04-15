@@ -37,6 +37,8 @@ class StoreScreen extends Component {
         this.state = {
             selectedTapBarIndex: 0,
             selectedTapBarCategory: null,
+            lastVisible: 10,
+            limit: 10
         };
     }
     async componentWillMount(){
@@ -44,10 +46,11 @@ class StoreScreen extends Component {
         await this.props.getCategories(id)
     }
 
-    getProductsByCategory = (id,token) => {
+    getProductsByCategory = (id,store_id) => {
+        const { lastVisible, limit } = this.state;
         const data = this.props.dataProducts.products;
         const categoryExist = data.filter(category => category.category_id === id);
-        categoryExist.length === 0 ? this.props.getProducts(id, token) : null;
+        categoryExist.length === 0 ? this.props.getProducts({ id, store_id, lastVisible, limit }) : null;
     }
 
     addBasket = (product) => {
@@ -361,9 +364,9 @@ const mapStateToProps = state => ({
       dispatch(ActionSetLoading());
       dispatch(ActionGetCategoriesByStore(idStore))
     },
-    getProducts: (idCategory, token ) => {
+    getProducts: (data) => {
         dispatch(ActionSetLoading());
-        dispatch(ActionGetProductsByCategory(idCategory,token))
+        dispatch(ActionGetProductsByCategory(data))
     },
     setPosition:(position) => {
         dispatch(ActionSetPosition(position))

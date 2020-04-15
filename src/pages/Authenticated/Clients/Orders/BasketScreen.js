@@ -19,23 +19,52 @@ import { ActionRemoveProductBasket,
     ActionCreateOrder } from '../../../../store/actions/ActionStores';
 import { showAlertError } from '../../../../components/Alerts';
 import { ActionSetLoading } from '../../../../store/actions/ActionApp';
-import { ActionGetUser } from '../../../../store/actions/ActionOrder';
-import { FieldSelect } from '../../../../components/Fields';
-import { ButtonBackDown } from '../../../../components/ButtonRegister';
+import { ActionGetUser, ActionUpdateUser } from '../../../../store/actions/ActionOrder';
+import { ButtonBackDown, ButtonRegister } from '../../../../components/ButtonRegister';
 import moment from "moment";
 import 'moment/locale/es'
 import { ActionSendPushNotication } from '../../../../store/actions/ActionNotifications';
+import geohash from "ngeohash";
+import Address from '../../../../components/Address';
+import Geocoder from 'react-native-geocoding';
 
 let screenWidth = Dimensions.get('window').width;
 
 class BasketScreen extends Component {
     state = {
-        address : null
+        address : null,
+        detail: '',
+        visibleAddress : false,
+        addressLocation : ''
     }
 
     componentDidMount(){
-        console.log('this.props.user.uid',this.props.user.uid)
-        this.props.getUser(this.props.user.uid)
+        this.props.getUser(this.props.user.uid);
+        try {
+            console.log('this.props.dataUser',this.props.dataUser)
+            if(  this.props.dataUser.address.length > 0 && this.state.address == null ){
+                console.log('entraaa')
+                this.setState({ 
+                    address: this.props.dataUser.address[0].address, 
+                    detail:  this.props.dataUser.address[0].detail
+                })
+            }
+        } catch (error) {
+          console.log(error)  
+        }
+    };
+
+    componentWillReceiveProps(newProps){
+        if(newProps.dataUser !== this.props.dataUser){
+            console.log('componentWillReceiveProps')
+            try {
+                if(newProps.dataUser.address.length > 0){
+                    this.setState({address : newProps.dataUser.address[0].address});
+                }
+            } catch (error) {
+                
+            }
+        }
     };
 
     addQuantity = (idProduct) => {
@@ -59,7 +88,6 @@ class BasketScreen extends Component {
             for (let i = 0; i < stores.length; i++) {
                 const id = stores[i]._ref._documentPath._parts[1];
                 if(id === store_id){
-                    console.log('stores[i]._data',stores[i]._data);
                     store_name = stores[i]._data.name;
                     owner_id = stores[i]._data.owner_id
                 }
@@ -71,8 +99,9 @@ class BasketScreen extends Component {
             const total = this.props.basket.total;
             const status = 'pending';
             const products = this.props.basket.addedItems;
-            const address = this.props.form.values.address;
-            const phone = this.props.form.values.phone;
+            const address = this.props.dataUser.address[0].address;
+            const detail = this.props.dataUser.address[0].detail
+            const phone = this.props.dataUser.address[0].phone;
             const client = this.props.dataUser.firstname + ' ' + this.props.dataUser.lastname;
             Alert.alert(
                 'Realizar pedido',
@@ -84,7 +113,20 @@ class BasketScreen extends Component {
                         style: 'cancel',
                     },
                     {   text: 'Aceptar', onPress: () => {
-                        this.props.addOrder({store_id,store_name,client, total,status,products,address,phone,user_id,owner_id, created_at, time}, this.props.navigation)
+                        this.props.addOrder({
+                            store_id,
+                            store_name,
+                            client, total,
+                            status,
+                            products,
+                            address,
+                            phone,
+                            detail,
+                            user_id,
+                            owner_id, 
+                            created_at, 
+                            time
+                        }, this.props.navigation)
                         this.props.sendPushNotification(
                             [owner_id], 
                             'Tienes un nuevo pedido!', 
@@ -103,69 +145,158 @@ class BasketScreen extends Component {
 
     onChange = ( value ) => {
         this.setState({ address:value })
+    };
+
+    addAddress = (address,phone,detail) => {
+        console.log('this.props.position',this.props.position)
+        const { latitude, longitude } = this.props.position.position;
+        const idUser = this.props.user.uid;
+        const hash = geohash.encode(latitude, longitude);
+        const newAddress = { address, phone, detail, geohash : hash };
+        var adressNow = this.props.dataUser.address;
+        console.log('adressNow',adressNow);
+        if(adressNow === undefined){
+            this.props.dataUser.address = [];
+            this.props.dataUser.address.push(newAddress);
+        } else {
+            adressNow.push(newAddress);
+        }
+        const user  = this.props.dataUser;
+        this.setState({ visibleAddress:false })
+        this.props.updateUser({user, idUser });
+    };
+
+    updateAddressPosition = ( address ) => {
+        const idUser = this.props.user.uid
+        this.setState({ visibleAddress:false })
+        this.props.dataUser.address = address;
+        const user  = this.props.dataUser;
+        this.props.updateUser({user, idUser });
+    };
+
+    getAddress = (lat,lng) => { 
+        Geocoder.init("AIzaSyACPfd5eBKP1GI1XDrLMB_Sm_eGD_VRC7Y", {language : "es"});
+        Geocoder.from(lat,lng)
+        .then(json => {
+            console.log('json', json);
+        		var addressComponent = json.results[0].address_components[1].long_name + ' # ' + json.results[0].address_components[0].long_name;
+                this.setState({addressLocation : addressComponent})
+                console.log('addressComponent',addressComponent);
+        })
+        .catch(error => console.warn(error));
+    }
+
+    showModalAddress = () => {
+        const { latitude, longitude } = this.props.position.position;;
+        this.getAddress(latitude, longitude)
+        this.setState({visibleAddress : !this.state.visibleAddress})
     }
 
     render() {
-        const { basket, dataUser } = this.props;
-        if(  dataUser.address && this.state.address == null ){
-            this.setState({ address: dataUser.address[0]})
-        }
-        console.log('this.props.dataUser', this.props.dataUser);
+        const { basket, dataUser, position } = this.props;
+        console.log('this.props.dataUser', dataUser);
+        console.log('position',position)
         return (
             <View style={{flex:1, backgroundColor:'white'}}>
                 <Transition style={{flex:1}} shared={'basket'}>
                     <View style={[styles.detailTopContainer]}>
+                        <View style={styles.detailTopBottomSubContainer}>
+                            <Text style={styles.titleHeader}>Cesta</Text> 
+                            { this.state.address ? 
+                            <View>
+                                <Text style={{color:'white', marginLeft:10}}>{this.state.address}</Text>                  
+                                <Text style={{color:'white', marginLeft:10}}>{this.state.detail}</Text>    
+                            </View>     
+                            : 
+                            <TouchableOpacity 
+                            style={styles.touchableAddress}
+                            onPress={() => this.showModalAddress()}>
+                                <Text style={{color:'white', marginLeft:10}}>Agregar dirección</Text>  
+                                <Image style={styles.edit}
+                                source={require('../../../../../assets/icons/down-white.png')}/>   
+                            </TouchableOpacity>
+                            }  
+                            <Address 
+                            dataUser={this.props.dataUser}
+                            addressLocation={this.state.addressLocation}
+                            addAddress={(address,phone,detail) => this.addAddress(address,phone,detail)} 
+                            updateAddressPosition={(address) => this.updateAddressPosition(address)}
+                            close={() => this.setState({ visibleAddress:false })}
+                            visibleAddress={this.state.visibleAddress} />        
+                        </View>
                         <View style={styles.navigationHeaderContainer}>
                             <ButtonBackDown 
                             navigation = { this.props.navigation}
                             imageStyle = {{ width:scaleToDimension(30), height:scaleToDimension(30) }}
                             />
                         </View>
-                        <View style={styles.detailTopBottomSubContainer}>
-                            <Image style={{width:scaleToDimension(40), height:scaleToDimension(40)}}
-                            source={require('../../../../../assets/icons/logo-2.png')}/>
-                           <Text style={styles.titleHeader}>$ {basket.total}</Text>
-                        </View>
                     </View>
                 </Transition>
-                <View style={{flex:2}}>
+                <View style={{flex:3}}>
                     { basket.addedItems ?
                     <FlatList
-                        showsHorizontalScrollIndicator={false}
-                        horizontal={false}
-                        data={basket.addedItems}
-                        extraData={basket}
-                        renderItem={({item, index}) => this.renderProductsCard(item, index)}
+                    showsHorizontalScrollIndicator={false}
+                    horizontal={false}
+                    data={basket.addedItems}
+                    extraData={basket}
+                    renderItem={({item, index}) => this.renderProductsCard(item, index)}
                     /> :
                     <View style={{alignItems:'center', justifyContent:'center',marginTop:20}}>
                         <Text>No hay productos en la cesta.</Text>
                     </View>
                     }
-                </View>
-                <View style={{ flex:2 }}>
-                    <View style={styles.viewTitleFooter}>
-                        <Text style={styles.titleFooter}>Entrega</Text>
-                    </View>
-                    { this.props.dataUser ?
-                    <ScrollView style={{flex:6}}>          
-                        <View style={{ flex:1, marginBottom:10, alignItems:'center', justifyContent:'center'}}>
-                            <FieldSelect
-                            data={ dataUser.address }
-                            initialValue={this.state.address}
-                            change={(value) => this.onChange(value)}
-                            />
+                </View>     
+                <View style={{ flex:2.5, paddingHorizontal:30, paddingTop:15, marginBottom:10}}>
+                    <ScrollView>
+                        <Text style={styles.titleFooter}>Información de pago</Text>
+                        <View style={{ flex:1, flexDirection:'row', marginTop:25}}>
+                            <View style={{flex:1}}>
+                                <Text style={styles.subtitleHeader}>Costo</Text>
+                            </View>
+                            <View style={{flex:1, alignItems:'flex-end'}}>
+                                <Text style={styles.subtitleHeaderl}> $ {basket.total.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</Text>
+                            </View>
                         </View>
-                        <View style={{flex:4,marginTop:10, paddingHorizontal:20}}>         
-                            <DeliveryForm 
-                            note={true} 
-                            editable={true}
-                            data={this.state.address} 
-                            addOrder={this.addOrder} 
-                            buttonName="Pedir" />
-                        </View>                
-                    </ScrollView>: <View></View>
-                    }
-                </View>
+                        <View style={{ flex:1, flexDirection:'row', marginBottom:3}}>
+                            <View style={{flex:1}}>
+                                <Text style={styles.subtitleHeader}>Servicio</Text>
+                            </View>
+                            <View style={{flex:2.5, alignItems:'flex-end'}}>
+                                <Text style={styles.subtitleHeaderl}> $ 500</Text>
+                            </View>
+                        </View>
+                        <View style={{ flex:1, flexDirection:'row', marginBottom:3}}>
+                            <View style={{flex:1}}>
+                                <Text style={styles.subtitleHeaderl}>Total</Text>
+                            </View>
+                            <View style={{flex:2.5, alignItems:'flex-end'}}>
+                                <Text style={styles.subtitleHeaderl}> $ {(basket.total + 500).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</Text>
+                            </View>
+                        </View>
+                        <View style={{ flex:1, flexDirection:'row', marginBottom:3, marginTop:3}}>
+                            <View style={{flex:1}}>
+                                <Text style={styles.subtitleHeader}>Medio de pago</Text>
+                            </View>
+                            <View style={{flex:1, alignItems:'flex-end'}}>
+                                <Text style={styles.subtitleHeaderl}> Efectivo</Text>
+                            </View>
+                        </View>
+                        <Text style={{fontSize:10}}>*Proximamente pagos con tarjeta de crédito y débito.</Text>
+                    </ScrollView>          
+                </View>  
+                { !this.state.address && (
+                    <Text style={{fontSize:10, textAlign:'center', color:"#9c272c"}}>
+                        *Debe agregar una dirección para poder hacer su pedido.
+                    </Text>
+                    )}    
+                <View style={{flex:.5, paddingHorizontal:20, alignItems:'center', marginBottom:15, paddingTop:5}}>     
+                    <ButtonRegister 
+                    title="Pedir" 
+                    invalid={!this.state.address}
+                    click={ this.addOrder }                            
+                    color="black"/>    
+                </View>      
+               
             </View>
         )
     }
@@ -190,8 +321,9 @@ const styles = StyleSheet.create({
         backgroundColor:'#ffffff'
     },
     detailTopContainer: {
+        flexDirection:'row',
         backgroundColor:'black',
-        height: scaleToDimension(120),
+        height: scaleToDimension(100),
         width: screenWidth,
         borderBottomLeftRadius: 20,
         borderBottomRightRadius:20,
@@ -213,33 +345,34 @@ const styles = StyleSheet.create({
        marginBottom:10
     },
     titleFooter:{
-        fontSize:24,
+        fontSize:20,
         fontFamily:'Ubuntu-Bold',
         textAlign:'center'
     },  
     navigationHeaderContainer: {
-        height: Header.HEIGHT,
-        width: screenWidth,
+        flex:1,
         color: "blue",
         justifyContent: 'center',
         alignItems:'center',
-        top:15
     },
     detailTopBottomSubContainer: {
-        flexDirection:'row',
-        alignItems:'flex-end',
-        width: screenWidth - 30,
+        flex:3,
+        justifyContent:'flex-end',
         backgroundColor: 'transparent',
-        position: 'absolute',
-        bottom: 15,
-        left: 15,
-        right: 15,
+        padding:10
     },
     titleHeader:{
         fontFamily:'Ubuntu-Bold',
         color: 'white', 
-        fontSize: scaleToDimension(30),
+        fontSize: scaleToDimension(24),
         marginLeft:10
+    },
+    subtitleHeader:{
+        fontSize: scaleToDimension(15),
+    },
+    subtitleHeaderl:{
+        fontFamily:'Ubuntu-Bold',
+        fontSize: scaleToDimension(15),
     },
     totalText:{
         fontFamily:'Ubuntu-Bold',
@@ -256,7 +389,22 @@ const styles = StyleSheet.create({
         alignItems:'center',
         justifyContent:'center',
         paddingBottom:15
-    }
+    },
+    touchableAddress: {
+        marginTop:5,
+        flexDirection:'row',
+        alignItems:'center',
+    },
+    textTouchableAddress:{
+        color: '#58647a',
+        fontSize:12, 
+        marginLeft:5
+    },
+    edit:{
+        height:15,
+        width:15,
+        marginLeft:5
+    },
 })
 
 const mapStateToProps = state => {
@@ -293,7 +441,11 @@ const mapStateToProps = state => {
     },
     sendPushNotification:(devices, body, subtitle, path, id) => {
         dispatch(ActionSendPushNotication({devices, body, subtitle, path, id}));
-    }
+    },
+    updateUser:(user) => {
+        dispatch(ActionSetLoading());
+        dispatch(ActionUpdateUser(user))
+    },
   });
   
 export default connect(mapStateToProps, mapDispatchToProps)(BasketScreen);
