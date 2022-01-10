@@ -31,8 +31,8 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:225916954305:ios:cce38b74a69f9291</string>
+	<string></string>
 	<key>DATABASE_URL</key>
-	<string>https://domis-camellab.firebaseio.com</string>
+	<string></string>
 </dict>
 </plist>
